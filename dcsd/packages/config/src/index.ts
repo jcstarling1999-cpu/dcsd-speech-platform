@@ -30,6 +30,8 @@ const EnvSchema = z.object({
 
   AZURE_AI_KEY: z.string().optional(),
   AZURE_AI_ENDPOINT: z.string().url().optional(),
+  AZURE_AI_API_VERSION: z.string().optional(),
+  AZURE_AI_DEPLOYMENT: z.string().optional(),
   AZURE_REGION: z.string().optional(),
   AZURE_SPEECH_KEY: z.string().optional(),
   AZURE_SPEECH_REGION: z.string().optional(),
@@ -39,6 +41,7 @@ const EnvSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   AWS_REGION: z.string().optional(),
+  AWS_BEARER_TOKEN_BEDROCK: z.string().optional(),
   DEEPGRAM_API_KEY: z.string().optional(),
   ELEVENLABS_API_KEY: z.string().optional(),
   AIMLAPI_KEY: z.string().optional(),

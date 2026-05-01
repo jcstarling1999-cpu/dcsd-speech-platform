@@ -7,6 +7,20 @@
   backdrop-filter: blur(var(--blur-md)) saturate(145%);
   -webkit-backdrop-filter: blur(var(--blur-md)) saturate(145%);
   box-shadow: var(--shadow-mid);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, backdrop-filter 220ms ease;
+}
+
+.glass-panel:hover {
+  transform: translateY(-2px);
+  border-color: var(--edge-highlight);
+  backdrop-filter: blur(calc(var(--blur-md) + 4px)) saturate(165%);
+  -webkit-backdrop-filter: blur(calc(var(--blur-md) + 4px)) saturate(165%);
+  box-shadow: var(--shadow-high);
+}
+
+.glass-panel:focus-within {
+  border-color: var(--accent-lagoon);
+  box-shadow: 0 0 0 1px rgba(116, 212, 190, 0.5), var(--shadow-high);
 }
 
 .glass-nav::before,

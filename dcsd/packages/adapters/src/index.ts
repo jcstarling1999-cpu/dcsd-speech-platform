@@ -195,14 +195,6 @@ function azureSpeechRegion(): string {
   return env.AZURE_SPEECH_REGION ?? env.AZURE_REGION ?? env.PROVIDER_REGION_DEFAULT;
 }
 
-async function tryReadUrlText(url: string): Promise<string> {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`SOURCE_READ_FAILED:${res.status}`);
-  }
-  return await res.text();
-}
-
 class AzureSttAdapter extends BaseAdapter {
   readonly id = "stt.azure";
   readonly type = "stt" as const;

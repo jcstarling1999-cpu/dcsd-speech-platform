@@ -1,6 +1,7 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import websocket from "@fastify/websocket";
 import { randomBytes, randomUUID } from "node:crypto";
+import { z } from "zod";
 import {
   ApiKeyCreateRequest,
   ApiKeyRecord,
@@ -44,6 +45,25 @@ interface Principal {
   method: "jwt" | "api-key" | "dev";
 }
 
+type LlmProviderName = "azure" | "openai" | "anthropic" | "aimlapi" | "bedrock";
+type LlmRole = "system" | "user" | "assistant";
+
+interface LlmCatalogItem {
+  provider: LlmProviderName;
+  enabled: boolean;
+  configured: boolean;
+  models: string[];
+  defaultModel: string;
+}
+
+const DEFAULT_LLM_MODELS: Record<LlmProviderName, string[]> = {
+  azure: ["gpt-4o-mini", "gpt-4o"],
+  openai: ["gpt-4o-mini", "gpt-4o"],
+  anthropic: ["claude-3-5-sonnet-20241022", "claude-3-opus-20240229"],
+  aimlapi: ["gpt-4o", "gpt-4o-mini", "kimi-k2.6", "claude-3-5-sonnet-20241022"],
+  bedrock: ["anthropic.claude-opus-4-7", "nvidia.nemotron-super-3-120b"]
+};
+
 const env = loadEnv();
 const runtime = new PlatformRuntime({
   region: env.PROVIDER_REGION_DEFAULT,
@@ -56,6 +76,22 @@ const runtime = new PlatformRuntime({
 });
 
 const wsSubscribers = new Map<string, Set<any>>();
+
+const LlmChatRequest = z.object({
+  provider: z.enum(["azure", "openai", "anthropic", "aimlapi", "bedrock"]).optional(),
+  model: z.string().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  maxTokens: z.number().int().min(1).max(4096).optional(),
+  system: z.string().optional(),
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["system", "user", "assistant"]),
+        content: z.string().min(1)
+      })
+    )
+    .min(1)
+});
 
 export function buildServer() {
   const app = Fastify({ logger: false });
@@ -123,6 +159,115 @@ export function buildServer() {
       },
       queueSnapshot: runtime.queue.snapshot()
     };
+  });
+
+  app.get("/v1/llm/models", async (request, reply) => {
+    const principal = getPrincipal(request);
+    assertPermission(principal.role, "settings:read");
+
+    return reply.send({ providers: buildLlmModelCatalog(env) });
+  });
+
+  app.get("/v1/llm/health", async (request, reply) => {
+    const principal = getPrincipal(request);
+    assertPermission(principal.role, "settings:read");
+
+    const { mode } = (request.query as { mode?: string }) ?? {};
+    const catalog = buildLlmModelCatalog(env);
+
+    if (mode !== "probe") {
+      return reply.send({
+        mode: "keys",
+        providers: catalog.map((item) => ({
+          provider: item.provider,
+          status: item.enabled ? (item.configured ? "ok" : "unconfigured") : "disabled"
+        }))
+      });
+    }
+
+    const probes = await Promise.allSettled(
+      catalog.map(async (item) => {
+        if (!item.enabled || !item.configured) {
+          return {
+            provider: item.provider,
+            status: item.enabled ? "unconfigured" : "disabled",
+            latencyMs: 0
+          };
+        }
+
+        const result = await probeLlmProvider(env, item.provider, item.defaultModel);
+        return result;
+      })
+    );
+
+    return reply.send({
+      mode: "probe",
+      providers: probes.map((result) =>
+        result.status === "fulfilled"
+          ? result.value
+          : {
+              provider: "unknown",
+              status: "error",
+              latencyMs: 0,
+              error: "probe failed"
+            }
+      )
+    });
+  });
+
+  app.post("/v1/llm/chat", async (request, reply) => {
+    const principal = getPrincipal(request);
+    assertPermission(principal.role, "jobs:write");
+
+    const parsed = LlmChatRequest.safeParse(request.body);
+    if (!parsed.success) {
+      return validationError(reply, parsed.error.issues);
+    }
+
+    const catalog = buildLlmModelCatalog(env);
+    const available = catalog.filter((item) => item.enabled && item.configured);
+    if (available.length === 0) {
+      return reply.code(503).send({ code: "NO_LLM_PROVIDERS", message: "no LLM providers are configured" });
+    }
+
+    const requestedProvider = parsed.data.provider;
+    const fallbackProvider = available[0];
+    const provider = requestedProvider ?? fallbackProvider?.provider;
+    if (!provider) {
+      return reply.code(503).send({ code: "NO_LLM_PROVIDERS", message: "no LLM providers are configured" });
+    }
+    const providerConfig = catalog.find((item) => item.provider === provider);
+    if (!providerConfig || !providerConfig.enabled || !providerConfig.configured) {
+      return reply.code(400).send({ code: "LLM_PROVIDER_UNAVAILABLE", message: "provider is not configured" });
+    }
+
+    const model = parsed.data.model ?? providerConfig.defaultModel;
+    const messages = normalizeChatMessages(parsed.data.messages, parsed.data.system);
+
+    try {
+      const started = Date.now();
+      const result = await callLlmProvider(env, provider, {
+        model,
+        messages,
+        temperature: parsed.data.temperature ?? 0.4,
+        maxTokens: parsed.data.maxTokens ?? 800
+      });
+
+      return reply.send({
+        provider,
+        model: result.model,
+        latencyMs: Date.now() - started,
+        message: { role: "assistant", content: result.content }
+      });
+    } catch (error) {
+      log({
+        level: "error",
+        service: "api",
+        message: "llm chat failed",
+        fields: { provider, error: (error as Error).message }
+      });
+      return reply.code(502).send({ code: "LLM_ERROR", message: "provider request failed" });
+    }
   });
 
   app.post("/v1/dev/token", async (request, reply) => {
@@ -426,10 +571,14 @@ export function buildServer() {
   });
 
   app.get("/v1/ws", { websocket: true }, async (socket, request) => {
+    const ws = "socket" in socket ? socket.socket : socket;
+    if (!ws || typeof ws.send !== "function") {
+      return;
+    }
+
     try {
       const principal = await authenticateRequest(request);
       const group = wsSubscribers.get(principal.tenantId) ?? new Set<any>();
-      const ws = socket.socket;
       group.add(ws);
       wsSubscribers.set(principal.tenantId, group);
 
@@ -446,7 +595,7 @@ export function buildServer() {
         existing?.delete(ws);
       });
     } catch {
-      socket.socket.close();
+      ws.close?.();
     }
   });
 
@@ -473,6 +622,311 @@ export function buildServer() {
   });
 
   return app;
+}
+
+function buildLlmModelCatalog(env: ReturnType<typeof loadEnv>): LlmCatalogItem[] {
+  const azureConfigured = Boolean(env.AZURE_AI_KEY && env.AZURE_AI_ENDPOINT);
+  const openaiConfigured = Boolean(env.OPENAI_API_KEY);
+  const anthropicConfigured = Boolean(env.ANTHROPIC_API_KEY);
+  const aimlConfigured = Boolean(env.AIMLAPI_KEY);
+  const bedrockConfigured = Boolean(env.AWS_BEARER_TOKEN_BEDROCK || (env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY));
+
+  const azureModels = env.AZURE_AI_DEPLOYMENT ? [env.AZURE_AI_DEPLOYMENT, ...DEFAULT_LLM_MODELS.azure] : DEFAULT_LLM_MODELS.azure;
+
+  return [
+    {
+      provider: "azure" as const,
+      enabled: env.ENABLE_PROVIDER_AZURE,
+      configured: azureConfigured,
+      models: azureModels,
+      defaultModel: env.AZURE_AI_DEPLOYMENT ?? DEFAULT_LLM_MODELS.azure[0] ?? "gpt-4o-mini"
+    },
+    {
+      provider: "openai" as const,
+      enabled: env.ENABLE_PROVIDER_OPENAI,
+      configured: openaiConfigured,
+      models: DEFAULT_LLM_MODELS.openai,
+      defaultModel: DEFAULT_LLM_MODELS.openai[0] ?? "gpt-4o-mini"
+    },
+    {
+      provider: "anthropic" as const,
+      enabled: env.ENABLE_PROVIDER_ANTHROPIC,
+      configured: anthropicConfigured,
+      models: DEFAULT_LLM_MODELS.anthropic,
+      defaultModel: DEFAULT_LLM_MODELS.anthropic[0] ?? "claude-3-5-sonnet-20241022"
+    },
+    {
+      provider: "aimlapi" as const,
+      enabled: env.ENABLE_PROVIDER_AIMLAPI,
+      configured: aimlConfigured,
+      models: DEFAULT_LLM_MODELS.aimlapi,
+      defaultModel: DEFAULT_LLM_MODELS.aimlapi[0] ?? "gpt-4o"
+    },
+    {
+      provider: "bedrock" as const,
+      enabled: env.ENABLE_PROVIDER_AWS,
+      configured: bedrockConfigured,
+      models: DEFAULT_LLM_MODELS.bedrock,
+      defaultModel: DEFAULT_LLM_MODELS.bedrock[0] ?? "anthropic.claude-opus-4-7"
+    }
+  ];
+}
+
+function normalizeChatMessages(messages: Array<{ role: LlmRole; content: string }>, system?: string) {
+  const filtered = messages.filter((message) => message.role !== "system");
+  if (system && system.trim().length > 0) {
+    return [{ role: "system" as const, content: system.trim() }, ...filtered];
+  }
+  return messages;
+}
+
+async function probeLlmProvider(env: ReturnType<typeof loadEnv>, provider: LlmProviderName, model: string) {
+  const started = Date.now();
+  try {
+    await callLlmProvider(env, provider, {
+      model,
+      messages: [{ role: "user", content: "Reply with just the word ok." }],
+      temperature: 0,
+      maxTokens: 16
+    });
+    return { provider, status: "ok", latencyMs: Date.now() - started };
+  } catch (error) {
+    return { provider, status: "error", latencyMs: Date.now() - started, error: (error as Error).message };
+  }
+}
+
+async function callLlmProvider(
+  env: ReturnType<typeof loadEnv>,
+  provider: LlmProviderName,
+  input: { model: string; messages: Array<{ role: LlmRole; content: string }>; temperature: number; maxTokens: number }
+) {
+  switch (provider) {
+    case "azure":
+      return callAzureChat(env, input);
+    case "openai":
+      return callOpenAiChat(env, input);
+    case "anthropic":
+      return callAnthropicChat(env, input);
+    case "aimlapi":
+      return callAimlChat(env, input);
+    case "bedrock":
+      return callBedrockChat(env, input);
+  }
+}
+
+function buildPromptFromMessages(messages: Array<{ role: LlmRole; content: string }>): string {
+  return messages
+    .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+    .join("\n\n");
+}
+
+async function callBedrockChat(
+  env: ReturnType<typeof loadEnv>,
+  input: { model: string; messages: Array<{ role: LlmRole; content: string }>; temperature: number; maxTokens: number }
+) {
+  const region = env.AWS_REGION ?? "us-east-1";
+  const token = env.AWS_BEARER_TOKEN_BEDROCK;
+
+  if (!token) {
+    throw new Error("BEDROCK_NOT_CONFIGURED");
+  }
+
+  const url = `https://bedrock-runtime.${region}.amazonaws.com/model/${input.model}/invoke`;
+  const isAnthropic = input.model.startsWith("anthropic.");
+  const payload = isAnthropic
+    ? {
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: input.maxTokens,
+        temperature: input.temperature,
+        messages: input.messages.map((message) => ({ role: message.role, content: message.content }))
+      }
+    : {
+        max_tokens: input.maxTokens,
+        temperature: input.temperature,
+        messages: input.messages,
+        prompt: buildPromptFromMessages(input.messages)
+      };
+
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    },
+    30_000
+  );
+
+  const payloadJson = await readJsonBody(response);
+  if (!response.ok) {
+    throw new Error(`BEDROCK_ERROR:${response.status}:${payloadJson?.message ?? payloadJson?.error ?? "request failed"}`);
+  }
+
+  const content =
+    payloadJson?.content?.[0]?.text ??
+    payloadJson?.output?.message?.content?.[0]?.text ??
+    payloadJson?.output_text ??
+    payloadJson?.completion ??
+    "";
+
+  return { model: input.model, content };
+}
+
+async function callAzureChat(env: ReturnType<typeof loadEnv>, input: { model: string; messages: Array<{ role: LlmRole; content: string }>; temperature: number; maxTokens: number }) {
+  if (!env.AZURE_AI_ENDPOINT || !env.AZURE_AI_KEY) {
+    throw new Error("AZURE_NOT_CONFIGURED");
+  }
+  const apiVersion = env.AZURE_AI_API_VERSION ?? "2024-05-01-preview";
+  const url = new URL("/models/chat/completions", env.AZURE_AI_ENDPOINT);
+  url.searchParams.set("api-version", apiVersion);
+
+  const response = await fetchWithTimeout(url.toString(),
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${env.AZURE_AI_KEY}`
+      },
+      body: JSON.stringify({
+        model: input.model,
+        messages: input.messages,
+        temperature: input.temperature,
+        max_tokens: input.maxTokens
+      })
+    },
+    30_000
+  );
+
+  const payload = await readJsonBody(response);
+  if (!response.ok) {
+    throw new Error(`AZURE_ERROR:${response.status}:${payload?.error?.message ?? "request failed"}`);
+  }
+
+  const content = payload?.choices?.[0]?.message?.content ?? "";
+  return { model: payload?.model ?? input.model, content };
+}
+
+async function callOpenAiChat(env: ReturnType<typeof loadEnv>, input: { model: string; messages: Array<{ role: LlmRole; content: string }>; temperature: number; maxTokens: number }) {
+  if (!env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_NOT_CONFIGURED");
+  }
+  const response = await fetchWithTimeout(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: input.model,
+        messages: input.messages,
+        temperature: input.temperature,
+        max_tokens: input.maxTokens
+      })
+    },
+    30_000
+  );
+
+  const payload = await readJsonBody(response);
+  if (!response.ok) {
+    throw new Error(`OPENAI_ERROR:${response.status}:${payload?.error?.message ?? "request failed"}`);
+  }
+
+  const content = payload?.choices?.[0]?.message?.content ?? "";
+  return { model: payload?.model ?? input.model, content };
+}
+
+async function callAimlChat(env: ReturnType<typeof loadEnv>, input: { model: string; messages: Array<{ role: LlmRole; content: string }>; temperature: number; maxTokens: number }) {
+  if (!env.AIMLAPI_KEY) {
+    throw new Error("AIML_NOT_CONFIGURED");
+  }
+  const response = await fetchWithTimeout(
+    "https://api.aimlapi.com/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${env.AIMLAPI_KEY}`
+      },
+      body: JSON.stringify({
+        model: input.model,
+        messages: input.messages,
+        temperature: input.temperature,
+        max_tokens: input.maxTokens
+      })
+    },
+    30_000
+  );
+
+  const payload = await readJsonBody(response);
+  if (!response.ok) {
+    throw new Error(`AIML_ERROR:${response.status}:${payload?.error?.message ?? "request failed"}`);
+  }
+
+  const content = payload?.choices?.[0]?.message?.content ?? "";
+  return { model: payload?.model ?? input.model, content };
+}
+
+async function callAnthropicChat(env: ReturnType<typeof loadEnv>, input: { model: string; messages: Array<{ role: LlmRole; content: string }>; temperature: number; maxTokens: number }) {
+  if (!env.ANTHROPIC_API_KEY) {
+    throw new Error("ANTHROPIC_NOT_CONFIGURED");
+  }
+  const system = input.messages.find((message) => message.role === "system")?.content ?? "";
+  const messages = input.messages.filter((message) => message.role !== "system");
+
+  const response = await fetchWithTimeout(
+    "https://api.anthropic.com/v1/messages",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "anthropic-version": "2023-06-01",
+        "x-api-key": env.ANTHROPIC_API_KEY
+      },
+      body: JSON.stringify({
+        model: input.model,
+        max_tokens: input.maxTokens,
+        temperature: input.temperature,
+        system: system || undefined,
+        messages: messages.map((message) => ({ role: message.role, content: message.content }))
+      })
+    },
+    30_000
+  );
+
+  const payload = await readJsonBody(response);
+  if (!response.ok) {
+    throw new Error(`ANTHROPIC_ERROR:${response.status}:${payload?.error?.message ?? "request failed"}`);
+  }
+
+  const content = Array.isArray(payload?.content)
+    ? payload.content.map((block: { text?: string }) => block.text ?? "").join("")
+    : payload?.content?.text ?? "";
+  return { model: payload?.model ?? input.model, content };
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function readJsonBody(response: Response) {
+  const text = await response.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text.slice(0, 500) };
+  }
 }
 
 function broadcastEvent(event: TEventEnvelope): void {

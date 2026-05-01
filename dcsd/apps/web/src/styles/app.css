@@ -7,10 +7,50 @@ body {
   min-height: 100vh;
   font-family: "Space Grotesk", sans-serif;
   color: var(--ink-high);
+  position: relative;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 14% 16%, rgb(116 212 190 / 0.28), transparent 40%),
     radial-gradient(circle at 82% 4%, rgb(255 126 94 / 0.24), transparent 42%),
     linear-gradient(165deg, var(--bg-midnight) 0%, var(--bg-harbor) 58%, #165266 100%);
+}
+
+.ambient-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  width: 40vw;
+  height: 40vw;
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: 0.55;
+  transform: translate(calc(var(--mouse-x, 0) * 12px), calc(var(--mouse-y, 0) * 12px));
+  transition: transform 240ms ease-out;
+}
+
+.orb-1 {
+  top: -12vh;
+  left: -5vw;
+  background: radial-gradient(circle, rgba(116, 212, 190, 0.45), transparent 65%);
+}
+
+.orb-2 {
+  top: 30vh;
+  right: -10vw;
+  background: radial-gradient(circle, rgba(255, 126, 94, 0.35), transparent 62%);
+  transform: translate(calc(var(--mouse-x, 0) * -18px), calc(var(--mouse-y, 0) * -12px));
+}
+
+.orb-3 {
+  bottom: -15vh;
+  left: 30vw;
+  background: radial-gradient(circle, rgba(245, 178, 92, 0.32), transparent 66%);
+  transform: translate(calc(var(--mouse-x, 0) * 20px), calc(var(--mouse-y, 0) * 10px));
 }
 
 .layout {
@@ -19,6 +59,8 @@ body {
   padding: clamp(1rem, 2.5vw, 2rem);
   display: grid;
   gap: var(--space-3);
+  position: relative;
+  z-index: 1;
 }
 
 .topbar {
@@ -102,6 +144,10 @@ h2 {
   gap: var(--space-3);
 }
 
+.page-transition {
+  animation: page-in 420ms ease-out both;
+}
+
 .surface {
   border-radius: var(--radius-lg);
   padding: var(--space-3);
@@ -149,6 +195,11 @@ h2 {
   color: var(--ink-high);
   cursor: pointer;
   width: fit-content;
+  transition: transform 140ms ease, box-shadow 200ms ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
 }
 
 .glass-cta {
@@ -226,8 +277,150 @@ h2 {
   padding: 0.5rem 0.6rem;
 }
 
+.field textarea,
+.field select {
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(10 22 30 / 0.4);
+  color: var(--ink-high);
+  padding: 0.5rem 0.6rem;
+  font-family: inherit;
+}
+
+.field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
 .error {
   color: #ffd3c0;
+}
+
+.muted {
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+.chat-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-2);
+}
+
+.chat-shell {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.chat-messages {
+  display: grid;
+  gap: var(--space-1);
+  max-height: 420px;
+  overflow-y: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: rgb(5 14 20 / 0.35);
+}
+
+.chat-message {
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.chat-message.user {
+  border-color: rgba(116, 212, 190, 0.45);
+  background: rgba(116, 212, 190, 0.12);
+}
+
+.chat-message.assistant {
+  border-color: rgba(255, 126, 94, 0.4);
+  background: rgba(255, 126, 94, 0.1);
+}
+
+.chat-role {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-low);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.chat-input {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.chat-input textarea {
+  min-height: 120px;
+}
+
+.preset-grid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.preset-card {
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  display: grid;
+  gap: 0.6rem;
+}
+
+.preset-card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.preset-form {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.health-card {
+  border-radius: 14px;
+  padding: 0.8rem;
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.health-card.status-ok {
+  border-color: rgba(116, 212, 190, 0.6);
+}
+
+.health-card.status-error {
+  border-color: rgba(255, 126, 94, 0.6);
+}
+
+.health-card.status-unconfigured,
+.health-card.status-disabled {
+  border-color: rgba(245, 178, 92, 0.5);
+}
+
+.health-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.health-meta {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
 }
 
 .slo {
@@ -251,6 +444,18 @@ h2 {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

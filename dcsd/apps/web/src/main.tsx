@@ -19,16 +19,99 @@ type JobRecord = {
   type: string;
 };
 
+type LlmProviderInfo = {
+  provider: string;
+  enabled: boolean;
+  configured: boolean;
+  models: string[];
+  defaultModel: string;
+};
+
+type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
+
+type PresetDefinition = {
+  id: string;
+  name: string;
+  description: string;
+  system: string;
+};
+
+const BUILTIN_PRESETS: PresetDefinition[] = [
+  {
+    id: "coder",
+    name: "Coder",
+    description: "Focus on implementation details, clear diffs, and working code.",
+    system: "You are a senior software engineer. Provide precise, working code with minimal fluff. Ask for missing requirements only when necessary."
+  },
+  {
+    id: "reviewer",
+    name: "Code Reviewer",
+    description: "Find bugs, risks, and missing tests.",
+    system: "You are a strict code reviewer. Identify bugs, risks, and missing tests first. Provide concise, actionable feedback."
+  },
+  {
+    id: "architect",
+    name: "Architect",
+    description: "Design system structure and integration plans.",
+    system: "You are a software architect. Provide a clear plan, tradeoffs, and integration steps before implementation."
+  },
+  {
+    id: "debugger",
+    name: "Debugger",
+    description: "Diagnose failures and propose fixes.",
+    system: "You are a debugger. Ask for logs if needed, identify root cause, and propose the smallest fix that resolves the issue."
+  },
+  {
+    id: "qa",
+    name: "QA",
+    description: "Test cases and validation steps.",
+    system: "You are a QA engineer. Provide test steps, edge cases, and expected results."
+  }
+];
+
+const PRESET_STORAGE_KEY = "llmPresets";
+
+function loadCustomPresets(): PresetDefinition[] {
+  try {
+    const raw = localStorage.getItem(PRESET_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as PresetDefinition[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomPresets(presets: PresetDefinition[]) {
+  localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+}
+
 function apiBase(): string {
   return localStorage.getItem("apiBase") ?? DEFAULT_API_BASE;
 }
 
 function AppShell() {
   const location = useLocation();
+  useEffect(() => {
+    const handleMove = (event: MouseEvent) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = (event.clientY / window.innerHeight) * 2 - 1;
+      document.documentElement.style.setProperty("--mouse-x", x.toFixed(3));
+      document.documentElement.style.setProperty("--mouse-y", y.toFixed(3));
+    };
+    window.addEventListener("mousemove", handleMove);
+    return () => window.removeEventListener("mousemove", handleMove);
+  }, []);
+
   const nav = useMemo(
     () => [
       { to: "/upload", label: "Upload" },
       { to: "/jobs", label: "Jobs" },
+      { to: "/chat", label: "Model Chat" },
+      { to: "/agents", label: "Agent Presets" },
       { to: "/api-keys", label: "API Keys" },
       { to: "/settings", label: "Settings" },
       { to: "/convert", label: "Convert" },
@@ -40,6 +123,11 @@ function AppShell() {
 
   return (
     <main className="layout">
+      <div className="ambient-orbs" aria-hidden="true">
+        <span className="orb orb-1" />
+        <span className="orb orb-2" />
+        <span className="orb orb-3" />
+      </div>
       <header className="topbar glass-nav depth-2">
         <div className="brand">
           <p className="eyebrow">AURALITH ATLAS</p>
@@ -56,17 +144,21 @@ function AppShell() {
           ))}
         </aside>
         <section className="content-grid">
-          <Routes>
+          <div className="page-transition" key={location.pathname}>
+            <Routes>
             <Route path="/" element={<Navigate to="/upload" replace />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/chat" element={<ModelChatPage />} />
+            <Route path="/agents" element={<AgentPresetsPage />} />
             <Route path="/results/:jobId" element={<ResultsPage />} />
             <Route path="/api-keys" element={<ApiKeysPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/convert" element={<Placeholder title="Convert" />} />
             <Route path="/transcribe" element={<Placeholder title="Transcribe" />} />
             <Route path="/voice" element={<Placeholder title="Generate Voice" />} />
-          </Routes>
+            </Routes>
+          </div>
         </section>
       </section>
     </main>
@@ -388,14 +480,260 @@ function ApiKeysPage() {
 function SettingsPage() {
   const [api, setApi] = useState(localStorage.getItem("apiBase") ?? DEFAULT_API_BASE);
   const [saved, setSaved] = useState(false);
+  const [tenantId, setTenantId] = useState("00000000-0000-4000-8000-000000000001");
+  const [userId, setUserId] = useState("00000000-0000-4000-8000-000000000002");
+  const [health, setHealth] = useState<Array<{ provider: string; status: string; latencyMs?: number }>>([]);
+  const [healthError, setHealthError] = useState("");
+  const [checking, setChecking] = useState(false);
+
+  async function refreshHealth(mode: "keys" | "probe") {
+    setChecking(true);
+    setHealthError("");
+    try {
+      const res = await fetch(`${apiBase()}/v1/llm/health?mode=${mode}`, {
+        headers: { "x-tenant-id": tenantId, "x-user-id": userId }
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      setHealth(json.providers ?? []);
+    } catch (err) {
+      setHealthError((err as Error).message);
+    } finally {
+      setChecking(false);
+    }
+  }
+
   return (
     <article className="surface glass-panel depth-1">
       <h2>Settings</h2>
       <label className="field"><span>API Base URL</span><input value={api} onChange={(e) => setApi(e.target.value)} /></label>
+      <label className="field"><span>Tenant ID</span><input value={tenantId} onChange={(e) => setTenantId(e.target.value)} /></label>
+      <label className="field"><span>User ID</span><input value={userId} onChange={(e) => setUserId(e.target.value)} /></label>
       <div className="actions">
         <button className="btn glass-cta" onClick={() => { localStorage.setItem("apiBase", api); setSaved(true); }}>Save</button>
+        <button className="btn ghost" onClick={() => void refreshHealth("keys")} disabled={checking}>Check LLM Keys</button>
+        <button className="btn ghost" onClick={() => void refreshHealth("probe")} disabled={checking}>Probe LLMs</button>
       </div>
       {saved && <p>Saved. Reload app to apply.</p>}
+      {health.length > 0 && (
+        <div className="health-grid">
+          {health.map((item) => (
+            <div key={item.provider} className={`health-card status-${item.status}`}>
+              <p className="health-title">{item.provider}</p>
+              <p className="health-meta">{item.status}{item.latencyMs ? ` · ${item.latencyMs}ms` : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {healthError && <p className="error">{healthError}</p>}
+    </article>
+  );
+}
+
+function ModelChatPage() {
+  const [tenantId, setTenantId] = useState("00000000-0000-4000-8000-000000000001");
+  const [userId, setUserId] = useState("00000000-0000-4000-8000-000000000002");
+  const [providers, setProviders] = useState<LlmProviderInfo[]>([]);
+  const [provider, setProvider] = useState("openai");
+  const [model, setModel] = useState("gpt-4o-mini");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [presetId, setPresetId] = useState(BUILTIN_PRESETS[0]?.id ?? "coder");
+  const [customSystem, setCustomSystem] = useState("");
+
+  const presets = useMemo(() => [...BUILTIN_PRESETS, ...loadCustomPresets()], []);
+  const activePreset = presets.find((preset) => preset.id === presetId);
+
+  useEffect(() => {
+    async function loadProviders() {
+      try {
+        const res = await fetch(`${apiBase()}/v1/llm/models`, {
+          headers: { "x-tenant-id": tenantId, "x-user-id": userId }
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const json = await res.json();
+        const items = (json.providers ?? []) as LlmProviderInfo[];
+        setProviders(items);
+        const preferred = items.find((item) => item.enabled && item.configured) ?? items[0];
+        if (preferred) {
+          setProvider(preferred.provider);
+          setModel(preferred.defaultModel);
+        }
+      } catch (err) {
+        setError((err as Error).message);
+      }
+    }
+    void loadProviders();
+  }, [tenantId, userId]);
+
+  const availableModels = useMemo(() => {
+    const selected = providers.find((item) => item.provider === provider);
+    return selected?.models ?? [];
+  }, [providers, provider]);
+
+  useEffect(() => {
+    const selected = providers.find((item) => item.provider === provider);
+    if (selected) {
+      setModel(selected.defaultModel);
+    }
+  }, [provider, providers]);
+
+  async function sendMessage() {
+    if (!input.trim()) return;
+    setBusy(true);
+    setError("");
+    const system = customSystem.trim().length > 0 ? customSystem : activePreset?.system ?? "";
+    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: input.trim() }];
+    setMessages(nextMessages);
+    setInput("");
+
+    try {
+      const res = await fetch(`${apiBase()}/v1/llm/chat`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-tenant-id": tenantId,
+          "x-user-id": userId
+        },
+        body: JSON.stringify({
+          provider,
+          model,
+          system,
+          messages: nextMessages
+        })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      const reply = json.message?.content ?? "";
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function clearChat() {
+    setMessages([]);
+    setError("");
+  }
+
+  return (
+    <article className="surface glass-panel depth-3">
+      <h2>Model Chat</h2>
+      <p className="muted">Pick a provider, choose a model, and apply a preset like Coder or Reviewer.</p>
+      <div className="chat-controls">
+        <label className="field"><span>Tenant ID</span><input value={tenantId} onChange={(e) => setTenantId(e.target.value)} /></label>
+        <label className="field"><span>User ID</span><input value={userId} onChange={(e) => setUserId(e.target.value)} /></label>
+        <label className="field"><span>Provider</span>
+          <select value={provider} onChange={(e) => setProvider(e.target.value)}>
+            {providers.map((item) => (
+              <option key={item.provider} value={item.provider}>
+                {item.provider} {item.enabled ? "" : "(disabled)"}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field"><span>Model</span>
+          <select value={model} onChange={(e) => setModel(e.target.value)}>
+            {availableModels.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+        </label>
+        <label className="field"><span>Preset</span>
+          <select value={presetId} onChange={(e) => setPresetId(e.target.value)}>
+            {presets.map((item) => (
+              <option key={item.id} value={item.id}>{item.name}</option>
+            ))}
+          </select>
+        </label>
+        <label className="field"><span>Custom System Prompt (optional)</span>
+          <textarea value={customSystem} onChange={(e) => setCustomSystem(e.target.value)} placeholder={activePreset?.system ?? ""} />
+        </label>
+      </div>
+      <div className="chat-shell">
+        <div className="chat-messages">
+          {messages.length === 0 && <p className="muted">Start a conversation. Try: “Review this function for bugs…”</p>}
+          {messages.map((message, idx) => (
+            <div key={`${message.role}-${idx}`} className={`chat-message ${message.role}`}>
+              <span className="chat-role">{message.role}</span>
+              <p>{message.content}</p>
+            </div>
+          ))}
+        </div>
+        <div className="chat-input">
+          <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask for code, reviews, refactors, or tests..." />
+          <div className="actions">
+            <button className="btn glass-cta" onClick={() => void sendMessage()} disabled={busy}>Send</button>
+            <button className="btn ghost" onClick={clearChat}>Clear</button>
+          </div>
+        </div>
+      </div>
+      {error && <p className="error">{error}</p>}
+    </article>
+  );
+}
+
+function AgentPresetsPage() {
+  const [custom, setCustom] = useState<PresetDefinition[]>(loadCustomPresets());
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [system, setSystem] = useState("");
+
+  const allPresets = [...BUILTIN_PRESETS, ...custom];
+
+  function addPreset() {
+    if (!name.trim() || !system.trim()) return;
+    const next = [
+      ...custom,
+      {
+        id: `custom-${Date.now()}`,
+        name: name.trim(),
+        description: description.trim() || "Custom preset",
+        system: system.trim()
+      }
+    ];
+    setCustom(next);
+    saveCustomPresets(next);
+    setName("");
+    setDescription("");
+    setSystem("");
+  }
+
+  function removePreset(id: string) {
+    const next = custom.filter((preset) => preset.id !== id);
+    setCustom(next);
+    saveCustomPresets(next);
+  }
+
+  return (
+    <article className="surface glass-panel depth-2">
+      <h2>Agent Presets</h2>
+      <p className="muted">Presets give each model a role like Coder, Reviewer, or Architect.</p>
+      <div className="preset-grid">
+        {allPresets.map((preset) => (
+          <div key={preset.id} className="preset-card">
+            <h3>{preset.name}</h3>
+            <p>{preset.description}</p>
+            <pre>{preset.system}</pre>
+            {preset.id.startsWith("custom-") && (
+              <button className="btn ghost" onClick={() => removePreset(preset.id)}>Remove</button>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="preset-form">
+        <h3>Create Custom Preset</h3>
+        <label className="field"><span>Name</span><input value={name} onChange={(e) => setName(e.target.value)} /></label>
+        <label className="field"><span>Description</span><input value={description} onChange={(e) => setDescription(e.target.value)} /></label>
+        <label className="field"><span>System Prompt</span><textarea value={system} onChange={(e) => setSystem(e.target.value)} /></label>
+        <div className="actions">
+          <button className="btn glass-cta" onClick={addPreset}>Save Preset</button>
+        </div>
+      </div>
     </article>
   );
 }

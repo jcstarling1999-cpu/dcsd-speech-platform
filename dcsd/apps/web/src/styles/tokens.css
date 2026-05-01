@@ -1,4 +1,6 @@
 :root {
+  --mouse-x: 0;
+  --mouse-y: 0;
   --bg-midnight: #071721;
   --bg-harbor: #0f3644;
   --bg-mist: #e7edf0;
