@@ -630,46 +630,67 @@ function buildLlmModelCatalog(env: ReturnType<typeof loadEnv>): LlmCatalogItem[]
   const anthropicConfigured = Boolean(env.ANTHROPIC_API_KEY);
   const aimlConfigured = Boolean(env.AIMLAPI_KEY);
   const bedrockConfigured = Boolean(env.AWS_BEARER_TOKEN_BEDROCK || (env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY));
+  const fallbackDisabled = env.ENABLE_FALLBACK_PROVIDERS === false;
+
+  const azureEnabled = autoEnableProvider(azureConfigured, env.ENABLE_PROVIDER_AZURE, ["ENABLE_PROVIDER_AZURE", "ENABLE_AZURE"]);
+  const openaiEnabled = autoEnableProvider(openaiConfigured, env.ENABLE_PROVIDER_OPENAI, ["ENABLE_PROVIDER_OPENAI"], fallbackDisabled);
+  const anthropicEnabled = autoEnableProvider(anthropicConfigured, env.ENABLE_PROVIDER_ANTHROPIC, ["ENABLE_PROVIDER_ANTHROPIC"], fallbackDisabled);
+  const aimlEnabled = autoEnableProvider(aimlConfigured, env.ENABLE_PROVIDER_AIMLAPI, ["ENABLE_PROVIDER_AIMLAPI"], fallbackDisabled);
+  const bedrockEnabled = autoEnableProvider(bedrockConfigured, env.ENABLE_PROVIDER_AWS, ["ENABLE_PROVIDER_AWS"], fallbackDisabled);
 
   const azureModels = env.AZURE_AI_DEPLOYMENT ? [env.AZURE_AI_DEPLOYMENT, ...DEFAULT_LLM_MODELS.azure] : DEFAULT_LLM_MODELS.azure;
 
   return [
     {
       provider: "azure" as const,
-      enabled: env.ENABLE_PROVIDER_AZURE,
+      enabled: azureEnabled,
       configured: azureConfigured,
       models: azureModels,
       defaultModel: env.AZURE_AI_DEPLOYMENT ?? DEFAULT_LLM_MODELS.azure[0] ?? "gpt-4o-mini"
     },
     {
       provider: "openai" as const,
-      enabled: env.ENABLE_PROVIDER_OPENAI,
+      enabled: openaiEnabled,
       configured: openaiConfigured,
       models: DEFAULT_LLM_MODELS.openai,
       defaultModel: DEFAULT_LLM_MODELS.openai[0] ?? "gpt-4o-mini"
     },
     {
       provider: "anthropic" as const,
-      enabled: env.ENABLE_PROVIDER_ANTHROPIC,
+      enabled: anthropicEnabled,
       configured: anthropicConfigured,
       models: DEFAULT_LLM_MODELS.anthropic,
       defaultModel: DEFAULT_LLM_MODELS.anthropic[0] ?? "claude-3-5-sonnet-20241022"
     },
     {
       provider: "aimlapi" as const,
-      enabled: env.ENABLE_PROVIDER_AIMLAPI,
+      enabled: aimlEnabled,
       configured: aimlConfigured,
       models: DEFAULT_LLM_MODELS.aimlapi,
       defaultModel: DEFAULT_LLM_MODELS.aimlapi[0] ?? "gpt-4o"
     },
     {
       provider: "bedrock" as const,
-      enabled: env.ENABLE_PROVIDER_AWS,
+      enabled: bedrockEnabled,
       configured: bedrockConfigured,
       models: DEFAULT_LLM_MODELS.bedrock,
       defaultModel: DEFAULT_LLM_MODELS.bedrock[0] ?? "anthropic.claude-opus-4-7"
     }
   ];
+}
+
+function autoEnableProvider(configured: boolean, enabled: boolean, toggleNames: string[], fallbackDisabled = false): boolean {
+  if (enabled) {
+    return true;
+  }
+  if (fallbackDisabled) {
+    return false;
+  }
+  const explicitToggle = toggleNames.some((name) => Object.prototype.hasOwnProperty.call(process.env, name));
+  if (explicitToggle) {
+    return false;
+  }
+  return configured;
 }
 
 function normalizeChatMessages(messages: Array<{ role: LlmRole; content: string }>, system?: string) {
