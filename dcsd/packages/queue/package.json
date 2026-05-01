@@ -1,0 +1,21 @@
+{
+  "name": "@platform/queue",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "test": "tsx --test ../../tests/unit/queue.test.ts"
+  },
+  "dependencies": {
+    "@platform/contracts": "*",
+    "@upstash/redis": "^1.35.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

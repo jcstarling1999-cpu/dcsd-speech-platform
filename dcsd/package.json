@@ -1,0 +1,29 @@
+{
+  "name": "dcsd-speech-platform",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Azure-primary production speech platform monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces --if-present build",
+    "dev": "npm run --workspaces --if-present dev",
+    "lint": "eslint \"{apps,packages}/**/*.ts\" --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "test": "node --import tsx --test --test-force-exit tests/**/*.test.ts"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.25.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

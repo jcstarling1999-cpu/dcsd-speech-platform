@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Detection, Humanization, Tokens, Perplexity &amp; the Full Ecosystem</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08111f;
+      --bg-soft: rgba(11, 22, 41, 0.82);
+      --bg-elevated: rgba(19, 32, 56, 0.88);
+      --panel: rgba(13, 24, 45, 0.78);
+      --border: rgba(157, 192, 255, 0.16);
+      --text: #edf3ff;
+      --muted: #b4c2dc;
+      --dim: #7f8ea9;
+      --accent: #82d4ff;
+      --accent-2: #7ef0c4;
+      --accent-3: #ffc56a;
+      --accent-4: #ff8db8;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --sidebar-width: 320px;
+      --content-width: 1200px;
+      --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --font-mono: "SFMono-Regular", "IBM Plex Mono", "Menlo", monospace;
+    }
+
+    body.light {
+      color-scheme: light;
+      --bg: #eef5ff;
+      --bg-soft: rgba(255, 255, 255, 0.84);
+      --bg-elevated: rgba(250, 252, 255, 0.95);
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(35, 72, 122, 0.12);
+      --text: #16233a;
+      --muted: #44556f;
+      --dim: #68788f;
+      --accent: #0565b8;
+      --accent-2: #00886a;
+      --accent-3: #b06f00;
+      --accent-4: #b04877;
+      --shadow: 0 18px 40px rgba(34, 62, 101, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background:
+        radial-gradient(circle at top left, rgba(130, 212, 255, 0.16), transparent 24%),
+        radial-gradient(circle at 80% 0%, rgba(126, 240, 196, 0.14), transparent 22%),
+        linear-gradient(180deg, #060d18 0%, var(--bg) 55%, #050b14 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body.light {
+      background:
+        radial-gradient(circle at top left, rgba(0, 101, 184, 0.1), transparent 24%),
+        radial-gradient(circle at 80% 0%, rgba(0, 136, 106, 0.09), transparent 24%),
+        linear-gradient(180deg, #f6fbff 0%, var(--bg) 65%, #e8f0fa 100%);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      padding: 24px 18px 24px 22px;
+      border-right: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(6, 14, 28, 0.95), rgba(7, 16, 30, 0.84));
+      backdrop-filter: blur(18px);
+      overflow-y: auto;
+    }
+
+    body.light .sidebar {
+      background: linear-gradient(180deg, rgba(250, 252, 255, 0.96), rgba(242, 247, 255, 0.92));
+    }
+
+    .brand {
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .brand .eyebrow {
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+
+    .brand h1 {
+      margin: 0 0 10px 0;
+      font-size: 1.12rem;
+      line-height: 1.3;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .meta-stack,
+    .nav-group {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .meta-stack h2,
+    .nav-group h2 {
+      margin: 0;
+      padding: 14px 16px 10px;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta-stack .inner,
+    .nav-group .inner {
+      padding: 14px 16px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+      font-size: 0.93rem;
+      color: var(--muted);
+    }
+
+    .mini-list strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .toc {
+      display: grid;
+      gap: 8px;
+    }
+
+    .toc a {
+      padding: 9px 11px;
+      border-radius: 10px;
+      color: var(--muted);
+      display: block;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .toc a.active,
+    .toc a:hover {
+      background: rgba(130, 212, 255, 0.12);
+      color: var(--text);
+      text-decoration: none;
+      transform: translateX(2px);
+    }
+
+    .toc .sub {
+      margin-left: 10px;
+      border-left: 1px solid var(--border);
+      padding-left: 10px;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(8, 17, 31, 0.72);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+    }
+
+    body.light .topbar {
+      background: rgba(245, 249, 255, 0.86);
+    }
+
+    .search-wrap {
+      flex: 1 1 320px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      outline: none;
+      font-size: 0.96rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .button:hover,
+    .button.is-active {
+      transform: translateY(-1px);
+      border-color: rgba(130, 212, 255, 0.34);
+      background: rgba(130, 212, 255, 0.12);
+    }
+
+    .page {
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 28px 24px 90px;
+    }
+
+    .hero,
+    .section-card,
+    .chapter,
+    .comparison-block,
+    .paper-card,
+    .reference-card {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 30px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -12% -45% auto;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(130, 212, 255, 0.15), transparent 60%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.74rem;
+      color: var(--accent-2);
+      margin-bottom: 12px;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      line-height: 1.02;
+      font-family: var(--font-serif);
+      max-width: 14ch;
+    }
+
+    .hero p.lead {
+      margin: 18px 0 0;
+      max-width: 75ch;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 20px;
+      margin-top: 26px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.35rem;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .legend-grid,
+    .method-grid,
+    .synthesis-grid,
+    .guides-grid,
+    .appendix-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .legend-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .method-grid,
+    .synthesis-grid,
+    .guides-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .appendix-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .card h3,
+    .section-card h3,
+    .chapter summary h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .card p,
+    .card li,
+    .section-card p,
+    .section-card li,
+    .paper-card p,
+    .paper-card li {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .card ul,
+    .section-card ul,
+    .paper-card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    .section {
+      margin-top: 24px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2vw, 2.1rem);
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .section-card {
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .badge.official { color: var(--accent-2); }
+    .badge.cited { color: var(--accent); }
+    .badge.independent { color: var(--accent-3); }
+    .badge.inferred { color: var(--accent-4); }
+
+    .diagram {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      padding: 14px;
+    }
+
+    .diagram svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    details.chapter,
+    details.product-dossier,
+    details.reference-card {
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    details.chapter summary,
+    details.product-dossier summary,
+    details.reference-card summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 22px 22px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+    }
+
+    details.chapter summary::-webkit-details-marker,
+    details.product-dossier summary::-webkit-details-marker,
+    details.reference-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.chapter .content,
+    details.product-dossier .content,
+    details.reference-card .content {
+      padding: 0 22px 22px;
+    }
+
+    .chapter-meta,
+    .product-meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .mode-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .mode-block {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .mode-block h4 {
+      margin: 0 0 10px;
+      font-size: 0.96rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mode-block.professor h4 { color: var(--accent); }
+    .mode-block.coder h4 { color: var(--accent-2); }
+    .mode-block.plain h4 { color: var(--accent-3); }
+    .mode-block.inference h4 { color: var(--accent-4); }
+
+    pre,
+    code {
+      font-family: var(--font-mono);
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 16px;
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      background: rgba(3, 10, 20, 0.9);
+      border: 1px solid rgba(126, 240, 196, 0.2);
+      color: #ddf7eb;
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    body.light pre {
+      background: #0e1c2d;
+      color: #e8f2ff;
+    }
+
+    code.inline {
+      padding: 0.14rem 0.35rem;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .dossier-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .dossier-block {
+      padding: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-lg);
+    }
+
+    .dossier-block h4 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+    }
+
+    .source-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+      font-size: 0.92rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.94rem;
+    }
+
+    th,
+    td {
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: rgba(7, 16, 30, 0.96);
+      color: var(--text);
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    body.light th {
+      background: rgba(249, 252, 255, 0.96);
+    }
+
+    tbody tr:hover {
+      background: rgba(130, 212, 255, 0.05);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-top: 14px;
+    }
+
+    .comparison-block {
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .paper-card,
+    .reference-card {
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .glossary-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .glossary-item {
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .glossary-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.98rem;
+    }
+
+    .search-hidden {
+      display: none !important;
+    }
+
+    .back-to-top {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    .note {
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(130, 212, 255, 0.08);
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 16px;
+    }
+
+    .reading-time {
+      color: var(--dim);
+      font-size: 0.92rem;
+    }
+
+    body.mode-professor .mode-block:not(.professor),
+    body.mode-coder .mode-block:not(.coder),
+    body.mode-plain .mode-block:not(.plain),
+    body.mode-inference .mode-block:not(.inference) {
+      display: none;
+    }
+
+    @media (max-width: 1200px) {
+      .hero-grid,
+      .method-grid,
+      .synthesis-grid,
+      .guides-grid,
+      .appendix-grid,
+      .legend-grid,
+      .dossier-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .topbar {
+        padding: 12px 14px;
+      }
+
+      .hero,
+      .section-card,
+      .comparison-block,
+      .paper-card {
+        padding: 18px;
+      }
+
+      details.chapter summary,
+      details.product-dossier summary,
+      details.reference-card summary {
+        padding: 18px 18px 14px;
+      }
+
+      details.chapter .content,
+      details.product-dossier .content,
+      details.reference-card .content {
+        padding: 0 18px 18px;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      .sidebar,
+      .topbar,
+      .back-to-top {
+        display: none !important;
+      }
+
+      .app {
+        display: block;
+      }
+
+      body,
+      body.light {
+        background: white !important;
+        color: black !important;
+      }
+
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+
+      .hero,
+      .section-card,
+      .chapter,
+      .comparison-block,
+      .paper-card,
+      .reference-card,
+      .mode-block,
+      .card,
+      .dossier-block {
+        box-shadow: none !important;
+        background: white !important;
+        border-color: #bbb !important;
+        break-inside: avoid;
+      }
+
+      a {
+        color: black;
+        text-decoration: underline;
+      }
+    }
+  </style>
+</head>
+<body class="light">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="eyebrow">Master HTML Dossier</div>
+        <h1>AI Detection, Humanization, Tokens, Perplexity &amp; the Full Ecosystem</h1>
+        <p>One self-contained report. Public evidence first. Inference clearly labeled. Last verified against current public sources on April 13, 2026.</p>
+      </div>
+
+      <div class="meta-stack">
+        <h2>Document Facts</h2>
+        <div class="inner mini-list">
+          <div><strong>Corpus:</strong> 16 tools across detectors, humanizers, and writing platforms</div>
+          <div><strong>Modes:</strong> Professor, Coder, Plain English, Inference</div>
+          <div><strong>Research rule:</strong> Official docs before commentary, papers before vibes</div>
+          <div><strong>Deliverable:</strong> Single dependency-free HTML file</div>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <h2>Navigation</h2>
+        <div class="inner toc">
+          <a href="#hero">Hero</a>
+          <a href="#part-0">Part 0: Shell &amp; Method</a>
+          <a href="#part-1">Part I: Foundation Theory</a>
+          <div class="sub">
+            <a href="#ch-taxonomy">1. Taxonomy</a>
+            <a href="#ch-generation">2. Generation</a>
+            <a href="#ch-tokenization">3. Tokenization</a>
+            <a href="#ch-perplexity">4. Perplexity</a>
+            <a href="#ch-stylometry">5. Stylometry</a>
+            <a href="#ch-detectors">6. Detector Pipeline</a>
+            <a href="#ch-humanizers">7. Humanizer Pipeline</a>
+          </div>
+          <a href="#part-2">Part II: Product Dossiers</a>
+          <div class="sub">
+            <a href="#grammarly-core">Grammarly Core</a>
+            <a href="#grammarly-detector">Grammarly Detector</a>
+            <a href="#grammarly-humanizer">Grammarly Humanizer</a>
+            <a href="#gptzero">GPTZero</a>
+            <a href="#zerogpt-detector">ZeroGPT Detector</a>
+            <a href="#zerogpt-humanizer">ZeroGPT Humanizer</a>
+            <a href="#winston-ai">Winston AI</a>
+            <a href="#turnitin">Turnitin</a>
+            <a href="#copyleaks">Copyleaks</a>
+            <a href="#originality-ai">Originality.ai</a>
+            <a href="#sapling">Sapling</a>
+            <a href="#quillbot">QuillBot</a>
+            <a href="#undetectable-ai">Undetectable AI</a>
+            <a href="#stealthgpt">StealthGPT</a>
+            <a href="#hix-bypass">HIX Bypass</a>
+            <a href="#humanize-ai">Humanize AI</a>
+          </div>
+          <a href="#part-3">Part III: Comparisons</a>
+          <a href="#part-4">Part IV: Synthesis</a>
+          <a href="#part-5">Part V: References &amp; Appendix</a>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="search-wrap">
+          <input id="search" type="search" placeholder="Search products, concepts, methods, glossary terms, or citations" aria-label="Search dossier" />
+          <span class="reading-time" id="readingTime">Estimated reading time: calculating…</span>
+        </div>
+        <div class="controls">
+          <button class="button is-active" data-mode="all">All Modes</button>
+          <button class="button" data-mode="professor">Professor</button>
+          <button class="button" data-mode="coder">Coder</button>
+          <button class="button" data-mode="plain">Plain English</button>
+          <button class="button" data-mode="inference">Inference</button>
+          <button class="button" id="themeToggle">Toggle Theme</button>
+        </div>
+      </div>
+
+      <div class="page">
+        <section class="hero" id="hero" data-search="overview hero summary ai detector humanizer tokens perplexity">
+          <div class="eyebrow">One document to explain everything</div>
+          <h2>The full public-evidence map of AI detection and AI humanization</h2>
+          <p class="lead">
+            This dossier is built around a simple rule: separate what these tools <em>say</em>, what they <em>show</em>, what researchers can <em>measure</em>, and what we can only <em>infer</em>. That matters because the AI-detection market is full of marketing absolutes, while the underlying problem is probabilistic, adversarial, and often socially messy. The result is a report designed to be used by students, educators, researchers, editors, and developers who need a technical but readable map of the whole ecosystem.
+          </p>
+
+          <div class="hero-grid">
+            <div>
+              <div class="stat-grid">
+                <div class="stat"><strong>16</strong><span>product dossiers in a standardized template</span></div>
+                <div class="stat"><strong>7</strong><span>foundation chapters written in four reading modes</span></div>
+                <div class="stat"><strong>5</strong><span>major comparison layers plus synthesis and glossary</span></div>
+                <div class="stat"><strong>2026-04-13</strong><span>last verification date for this build</span></div>
+              </div>
+
+              <div class="note">
+                <strong>Use this document carefully:</strong> no AI detector can prove authorship from text alone. A detector score is not a lie detector, not a plagiarism verdict, and not a substitute for human review, process evidence, or institutional policy.
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>What this report does</h3>
+              <ul>
+                <li>Explains how language models generate text, how tokens work, and why perplexity became central in AI-detection marketing.</li>
+                <li>Shows how detector and humanizer products frame the same statistical problem from opposite sides of an arms race.</li>
+                <li>Documents every major public-facing workflow, toggle, or score type that can be verified without private account access.</li>
+                <li>Flags where commercial claims outrun public evidence.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="part-0" data-search="part 0 methodology design system evidence labels source priority shell">
+          <div class="section-heading">
+            <h2>Part 0: Shell, Method, and Evidence Discipline</h2>
+            <p>This section explains how the report is organized, how to read the evidence labels, and how the design system mirrors the substance: transparent, layered, and explicit about uncertainty.</p>
+          </div>
+
+          <div class="section-card">
+            <div class="legend-grid">
+              <div class="card">
+                <h3>Evidence Labels</h3>
+                <div class="badge-row">
+                  <span class="badge official">[OFFICIAL]</span>
+                  <span class="badge cited">[CITED]</span>
+                  <span class="badge independent">[INDEPENDENT]</span>
+                  <span class="badge inferred">[INFERRED]</span>
+                </div>
+                <p><span class="badge official">[OFFICIAL]</span> means the claim comes from a vendor page, help center, pricing page, API reference, trust center, or other first-party documentation. <span class="badge cited">[CITED]</span> marks a sourced factual statement, usually academic or technical. <span class="badge independent">[INDEPENDENT]</span> identifies third-party testing or peer-reviewed evaluation. <span class="badge inferred">[INFERRED]</span> marks analysis based on public behavior, product design, or technical plausibility rather than direct vendor disclosure.</p>
+              </div>
+
+              <div class="card">
+                <h3>Source Priority</h3>
+                <ol>
+                  <li>Official product and API documentation</li>
+                  <li>Primary technical papers and open-access academic sources</li>
+                  <li>Independent evaluations that materially test claims</li>
+                  <li>Supportive user reports, only when not used alone</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="method-grid" style="margin-top:16px;">
+              <div class="card">
+                <h3>Why a four-mode document?</h3>
+                <p>AI detection creates a communication problem as much as a statistical one. Professors want rigor, engineers want mechanism, general readers want clarity, and responsible analysts need an explicit uncertainty layer. The four-mode design avoids flattening those audiences into one generic explanation.</p>
+              </div>
+              <div class="card">
+                <h3>What “every feature” means here</h3>
+                <p>It means every publicly visible or documented control, tab, state, file type, score output, plan gate, or workflow step we can verify from public product surfaces and help docs. It does <em>not</em> pretend to know private internal weights, thresholds, or premium-only screens that are not publicly documented.</p>
+              </div>
+              <div class="card">
+                <h3>Why the ecosystem is hard to map</h3>
+                <p>The same company can be a writing assistant, a detector, and a humanizer at once. Grammarly spans all three. QuillBot is a paraphraser with detector features. Some humanizers advertise “passing detectors,” while some detectors now explicitly claim to catch bypassers. The taxonomy is real, but the market constantly blurs it.</p>
+              </div>
+            </div>
+
+            <div class="diagram">
+              <svg viewBox="0 0 900 280" role="img" aria-label="Ecosystem map">
+                <defs>
+                  <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#82d4ff" stop-opacity="0.95"></stop>
+                    <stop offset="100%" stop-color="#7ef0c4" stop-opacity="0.95"></stop>
+                  </linearGradient>
+                </defs>
+                <rect x="14" y="90" width="210" height="90" rx="18" fill="rgba(130,212,255,0.1)" stroke="rgba(130,212,255,0.45)"></rect>
+                <rect x="344" y="90" width="210" height="90" rx="18" fill="rgba(255,197,106,0.1)" stroke="rgba(255,197,106,0.45)"></rect>
+                <rect x="674" y="90" width="210" height="90" rx="18" fill="rgba(255,141,184,0.1)" stroke="rgba(255,141,184,0.45)"></rect>
+                <text x="119" y="128" font-size="22" text-anchor="middle" fill="url(#g1)" font-family="Avenir Next, Arial">Writing Assistant</text>
+                <text x="119" y="154" font-size="15" text-anchor="middle" fill="#b4c2dc">Generate, revise, correct, cite</text>
+                <text x="449" y="128" font-size="22" text-anchor="middle" fill="#ffc56a" font-family="Avenir Next, Arial">AI Detector</text>
+                <text x="449" y="154" font-size="15" text-anchor="middle" fill="#b4c2dc">Estimate machine-likeness</text>
+                <text x="779" y="128" font-size="22" text-anchor="middle" fill="#ff8db8" font-family="Avenir Next, Arial">AI Humanizer</text>
+                <text x="779" y="154" font-size="15" text-anchor="middle" fill="#b4c2dc">Rewrite to alter detection signals</text>
+                <line x1="224" y1="135" x2="344" y2="135" stroke="rgba(130,212,255,0.45)" stroke-width="3" stroke-dasharray="9 8"></line>
+                <line x1="554" y1="135" x2="674" y2="135" stroke="rgba(255,141,184,0.45)" stroke-width="3" stroke-dasharray="9 8"></line>
+                <text x="285" y="118" font-size="13" text-anchor="middle" fill="#d8e4ff">overlap</text>
+                <text x="614" y="118" font-size="13" text-anchor="middle" fill="#d8e4ff">arms race</text>
+                <text x="449" y="32" font-size="20" text-anchor="middle" fill="#edf3ff" font-family="Iowan Old Style, Georgia">The AI text market is not three silos.</text>
+                <text x="449" y="58" font-size="14" text-anchor="middle" fill="#b4c2dc">It is one contested pipeline with different commercial entry points.</text>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="part-1" data-search="foundation theory tokens tokenization perplexity stylometry detectors humanizers">
+          <div class="section-heading">
+            <h2>Part I: Foundation Theory</h2>
+            <p>These chapters explain the mechanics that commercial tools rely on, market, or fight against. Each one is written four ways so the same concept can be grasped as theory, engineering, intuition, and cautious inference.</p>
+          </div>
+
+          <details class="chapter" open id="ch-taxonomy" data-search="taxonomy writing assistant detector humanizer grammarly quillbot overlap">
+            <summary>
+              <div>
+                <h3>Chapter 1: What AI Writing Assistants, Detectors, and Humanizers Actually Are</h3>
+                <div class="chapter-meta">The core taxonomy, the blurred boundaries, and why the arms-race metaphor is more than rhetoric.</div>
+              </div>
+              <span class="badge cited">Foundational</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>AI writing assistants optimize production. They help users draft, revise, translate, simplify, paraphrase, cite, or reshape language. AI detectors, by contrast, are post-hoc classifiers or statistical tests that attempt to estimate whether text resembles machine-generated output. AI humanizers occupy the adversarial middle: they accept machine-generated or machine-assisted text, then rewrite it so that downstream detectors assign a more human-like score. The categories overlap because modern writing platforms increasingly bundle all three. Grammarly now offers core writing assistance, AI detection, and humanization; QuillBot combines paraphrasing, detection, and citation tooling. This makes product classification less about pure function than about the commercial workflow a vendor emphasizes.</p>
+                  <p><span class="badge cited">[CITED]</span> Historically, this ecosystem expanded rapidly after the mainstream arrival of ChatGPT in late 2022. A feedback loop followed: more generation led to more detection demand; more detection led to more humanizer demand; more humanization led detectors to claim bypass resistance; and writing suites responded by turning “responsible AI use” into a product category of their own.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>writer_assistant(input_text, context):
+    return generate_or_revise(input_text, context)
+
+detector(input_text):
+    features = extract_features(
+        perplexity=input_text,
+        stylometry=input_text,
+        classifier_embeddings=input_text
+    )
+    return probability_human_vs_ai(features)
+
+humanizer(input_text, target="more_human"):
+    rewritten = rewrite_for_variation(input_text)
+    return optimize_against_detector_signals(rewritten)</pre>
+                  <p>Architecturally, these are different interfaces onto the same latent object: text distributions. Writing assistants sample from a model. Detectors estimate which distribution a sample came from. Humanizers attempt distributional migration, pushing text away from regions detectors associate with AI.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>A writing assistant helps make words. A detector guesses whether words look machine-made. A humanizer tries to rewrite machine-made words so they stop looking machine-made. They are different tools, but they are all circling the same basic question: what patterns make text feel predictably AI-like versus unpredictably human?</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> The market is converging on workflow control, not just model quality. Vendors that can cover drafting, scanning, and rewriting inside one suite gain a data and retention advantage: users do not need to move text between separate tools. That helps explain why Grammarly, QuillBot, and others have expanded laterally into neighboring categories.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="chapter" open id="ch-generation" data-search="generation transformer attention autoregressive top k top p beam search temperature">
+            <summary>
+              <div>
+                <h3>Chapter 2: How Language Models Generate Text</h3>
+                <div class="chapter-meta">Transformers, token-by-token prediction, and why sampling settings change detectability.</div>
+              </div>
+              <span class="badge cited">Mechanics</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>Modern large language models are autoregressive next-token predictors. Given a context sequence <code class="inline">x₁ … xₙ</code>, the model estimates a conditional probability distribution over the next token <code class="inline">P(xₙ₊₁ | x₁ … xₙ)</code>. Transformer architectures implement this through stacked attention layers that allow each position to condition on prior positions. Generation is therefore not word-level planning in a human sense; it is repeated local probability estimation under a global context representation.</p>
+                  <p>Sampling strategy matters. Greedy decoding always picks the single highest-probability token and thus tends to create highly regular, low-entropy text. Temperature rescales logits before softmax, flattening or sharpening the distribution. Top-k limits candidates to the k most likely tokens; top-p keeps the smallest set whose cumulative mass exceeds p. Beam search keeps multiple candidate continuations, often improving coherence but also reinforcing high-probability continuations. These choices directly affect downstream detector features because they alter variance, surprisal, repetition, and sentence rhythm.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>logits = model(context_tokens)
+
+def sample_next(logits, strategy="top_p", temperature=0.8, k=40, p=0.92):
+    logits = logits / temperature
+    probs = softmax(logits)
+    if strategy == "greedy":
+        return argmax(probs)
+    if strategy == "top_k":
+        return sample(normalize(keep_top_k(probs, k)))
+    if strategy == "top_p":
+        return sample(normalize(keep_until_cumulative_mass(probs, p)))
+    if strategy == "beam":
+        return expand_multiple_best_paths(probs)
+
+while not stop_condition:
+    next_token = sample_next(model(context))
+    context.append(next_token)</pre>
+                  <p>Lower-entropy decoding often yields text with stronger local smoothness and lower surprisal. That is one reason raw LLM outputs can look “too even” to detectors. Humanizers partly work by reintroducing variation that greedy or conservative sampling suppresses.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>The model is always making a guess about the next chunk of text. Then it adds that chunk, looks at the whole sentence again, and guesses the next one. If you make it conservative, it chooses safe, obvious next words. If you make it looser, it takes more risks. That difference changes whether the writing feels polished but robotic, or varied and human-like.</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> Commercial humanizers probably do not rely on one trick. They likely combine prompt steering, paraphrase-specific fine-tuning, and post-processing rules that deliberately increase sentence-level variance, especially after the first pass of model rewriting. That would be the most economical way to combat detector features without training a wholly new generation stack from scratch.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="chapter" open id="ch-tokenization" data-search="tokens tokenization bpe wordpiece sentencepiece billing context windows">
+            <summary>
+              <div>
+                <h3>Chapter 3: Tokenization — How Machines See Text</h3>
+                <div class="chapter-meta">Why a token is not just a word, why BPE matters, and why token counts affect both context and cost.</div>
+              </div>
+              <span class="badge cited">Core Concept</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>Tokenization is the mapping from raw text into the discrete vocabulary units a model can process. Character-level tokenization is flexible but inefficient; word-level tokenization fails on rare forms and morphology. Subword tokenization, popularized through methods such as byte pair encoding (BPE), WordPiece, and SentencePiece, balances compression and compositionality. Sennrich, Haddow, and Birch (2016) helped popularize BPE for subword modeling in neural machine translation, while GPT-style systems later used byte-level variants so the vocabulary could handle arbitrary strings more robustly.</p>
+                  <p>In BPE, the training algorithm repeatedly merges the most frequent adjacent symbol pair. Start with characters, count pair frequencies, merge the most common pair into a new unit, then iterate. Over time, frequent morphemes and common word fragments become atomic tokens. The consequence is that “tokenization” is not whitespace splitting. A single visible word may become one token, several tokens, or part of a larger token depending on the tokenizer’s learned vocabulary.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>vocab = set(characters)
+splits = {word: list(word) for word in corpus}
+
+for step in range(num_merges):
+    pair_counts = count_adjacent_pairs(splits)
+    best_pair = argmax(pair_counts)
+    vocab.add(join(best_pair))
+    splits = merge_pair_in_all_words(splits, best_pair)
+
+def tokenize(word, vocab):
+    return greedily_match_longest_subwords(word, vocab)</pre>
+                  <p>Why this matters operationally: context windows are measured in tokens, not words; API billing is token-based; and detector systems that compute perplexity or log probabilities must use a tokenizer-model pair. Change the tokenizer and you can shift the statistics.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>The AI does not truly “see words” the way people do. It sees pieces. Some pieces are full words. Some are chunks like <code class="inline">ing</code>, <code class="inline">un</code>, punctuation, or even strange byte fragments. That is why one short sentence can be more tokens than a longer-looking sentence, and why pricing and context limits can feel weird.</p>
+                  <p>If a model breaks text into chunks differently, it may also judge that text differently.</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> Commercial detectors that mix classifier signals with perplexity-style signals probably standardize preprocessing carefully, because inconsistent normalization and tokenization would make sentence-level highlighting unstable. Vendors rarely disclose this in full detail, but any production detector needs it.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="chapter" open id="ch-perplexity" data-search="perplexity entropy surprisal cross entropy detectgpt">
+            <summary>
+              <div>
+                <h3>Chapter 4: Perplexity — The Famous Metric That Explains Less Than Marketing Suggests</h3>
+                <div class="chapter-meta">Entropy, cross-entropy, surprisal, and why low perplexity is useful but not dispositive.</div>
+              </div>
+              <span class="badge cited">Math</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>Perplexity measures how well a probability model predicts a sequence. In practice, it is the exponential of average negative log-likelihood, often written as <code class="inline">PP = exp(-1/N Σ log P(xᵢ | x&lt;i))</code>. Lower perplexity means the model is less “surprised” by the text. Because LLM outputs are sampled from distributions they themselves define, they often land in relatively high-probability regions of model space, yielding lower perplexity under similar models. Human writing is often less distributionally compliant, especially when it contains idiosyncratic phrasing, novel emphasis, abrupt topic shifts, or mixed stylistic signals.</p>
+                  <p>But perplexity is not a truth oracle. Simple human prose can also have low perplexity. Formulaic institutional writing can have very low perplexity. Heavily edited AI text can rise in perplexity. Text translated into simpler English can look more AI-like. This is why modern detectors either mix perplexity with additional features or move to classifier-based systems entirely.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>def perplexity(log_probs):
+    # log_probs = token log P(token | prefix)
+    avg_neg_log_likelihood = -sum(log_probs) / len(log_probs)
+    return exp(avg_neg_log_likelihood)
+
+example_log_probs = [-0.3, -0.7, -1.1, -0.2]
+pp = perplexity(example_log_probs)</pre>
+                  <p>DetectGPT pushed beyond raw perplexity by checking whether a passage lies in a negative-curvature region of the model’s log-probability landscape. That is a zero-shot detection approach, not a commercial turnkey workflow by itself, but it clarifies why “predictability” is broader than a single scalar score.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>Perplexity asks: “How shocked is the model by this text?” If the text looks like the kind of thing a language model would naturally say, the model is not very shocked. If the text is more unusual, surprising, or oddly human, the model is more shocked. That sounds powerful, but lots of human writing is predictable too, especially school essays, templates, and polite workplace prose.</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> When vendors still mention burstiness and perplexity in public explanations, that does not mean the production system is only using those. It often means those concepts are understandable marketing proxies for a more complex ensemble of classifiers, heuristics, and post-processing layers.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="chapter" open id="ch-stylometry" data-search="burstiness stylometry esl bias type token ratio revision history authorship">
+            <summary>
+              <div>
+                <h3>Chapter 5: Burstiness, Stylometry, and What Makes Text Feel Human</h3>
+                <div class="chapter-meta">Variance, rhythm, vocabulary richness, mixed authorship, and why fairness is a serious technical problem.</div>
+              </div>
+              <span class="badge independent">Fairness</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>Stylometry studies measurable features of writing style: type-token ratio, sentence-length variance, punctuation habits, part-of-speech frequencies, discourse markers, pronoun patterns, and more. Detector marketing often uses “burstiness” as a shorthand for sentence-length and complexity variation. Human text tends to vary more across clauses, tone, pacing, and rhetorical density. Raw AI text, especially under conservative decoding, often exhibits smoother local distributions and lower variance.</p>
+                  <p><span class="badge independent">[INDEPENDENT]</span> Yet fairness concerns are not incidental. Liang et al. (2023) showed that seven widely used detectors mislabeled non-native English TOEFL essays as AI-generated at an average false-positive rate of 61.3%, while performing far better on US eighth-grade essays. The problem is structural: simpler word choice and lower-perplexity syntax can be misread as “machine-like” even when the text is fully human. This turns style, proficiency, or neurotype into a risk factor.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>features = {
+  "mean_sentence_len": mean(sentence_lengths),
+  "sentence_len_std": std(sentence_lengths),
+  "type_token_ratio": unique_tokens / total_tokens,
+  "hapax_rate": count_once(tokens) / total_tokens,
+  "punctuation_profile": histogram(punctuation_marks),
+  "pos_distribution": tag_distribution(tokens),
+  "discourse_markers": count_markers(tokens),
+  "revision_trace": metadata_if_available
+}
+score = classifier.predict_proba(features)</pre>
+                  <p>Metadata changes the game. Revision histories, keystroke traces, and source attribution layers such as Grammarly Authorship provide process evidence, not just surface-text evidence. That is often more probative than stylometry alone.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>Humans are messy. We speed up, slow down, repeat ourselves, then suddenly write one sentence that sounds nothing like the last three. Detectors look for places where writing seems too smooth, too even, too statistically tidy. The trouble is that some real people also write in a simple, controlled, or formal way, so the detector can confuse “clear human writing” with “AI writing.”</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> Detector vendors that add mixed-authorship categories, sentence heat maps, or authorship-replay features are tacitly acknowledging that binary human-vs-AI framing is no longer enough. The real-world problem is now composite writing: brainstormed by AI, drafted by AI, edited by a person, then partially rewritten by a humanizer or assistant.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="chapter" open id="ch-detectors" data-search="detector pipeline classifier watermarking detectgpt threshold false positive">
+            <summary>
+              <div>
+                <h3>Chapter 6: How AI Detectors Actually Work</h3>
+                <div class="chapter-meta">Classifier stacks, zero-shot statistics, watermarking, highlighting, thresholds, and why no detector can be perfect.</div>
+              </div>
+              <span class="badge cited">Pipeline</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>There are three broad families of detection methods. First, supervised classifiers trained on human and machine-written corpora, often transformer-based, which learn distributional cues directly from labeled data. Second, zero-shot or statistic-driven methods, such as perplexity or DetectGPT-style curvature analysis, which do not require a separate detector fine-tuning stage. Third, watermarking, which is proactive rather than forensic: it embeds a detectable signal during generation rather than inferring one later from generic style. Kirchenbauer et al. (2023) show how token “green lists” and a statistical test can create detectable provenance with modest quality impact under appropriate conditions.</p>
+                  <p>Commercial systems usually operationalize detection as a pipeline: ingest text, normalize, extract multi-scale features, run one or more scoring models, map scores into UI categories, then generate highlights or confidence bands. The UI layer matters. A 70% AI score is not self-explanatory unless the vendor clearly states whether it means document-level probability, fraction of qualifying text, or a heuristic confidence band.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>input_text
+  -> normalize()
+  -> segment(document, paragraph, sentence)
+  -> extract(
+       embeddings,
+       perplexity_stats,
+       stylometry,
+       source_overlap,
+       revision_metadata_if_any
+     )
+  -> ensemble_score()
+  -> threshold_map()
+  -> highlight_sentences()
+  -> render(report)</pre>
+                  <p>False positives and false negatives are inevitable because the classes overlap. Detector outputs therefore depend on threshold choices, class priors, and the operational cost of being wrong. A vendor that optimizes for recall will flag more true AI text but also more human text. A vendor that optimizes for low false positives may miss more AI-assisted writing.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>Most detectors do not “know” who wrote something. They measure patterns, compare those patterns to examples they have seen before, and make a guess. Then they turn that guess into a score, label, or highlighted paragraph. If two kinds of writing overlap too much, the detector can only make a cautious estimate, not a certainty.</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> Vendors that claim both broad model coverage and resistance to bypassers likely run frequent model updates, maintain adversarial test sets, and use ensemble logic rather than one monolithic classifier. That is the only scalable way to keep up with new LLMs and paraphrasing tactics.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="chapter" open id="ch-humanizers" data-search="humanizer rewrite paraphrase style transfer temperature imperfection injection">
+            <summary>
+              <div>
+                <h3>Chapter 7: How AI Humanizers Work</h3>
+                <div class="chapter-meta">Counter-detection rewriting, semantic preservation, and why “humanized” is not the same as “human-authored.”</div>
+              </div>
+              <span class="badge cited">Adversarial</span>
+            </summary>
+            <div class="content">
+              <div class="mode-grid">
+                <div class="mode-block professor">
+                  <h4>Professor View</h4>
+                  <p>AI humanizers can be thought of as adversarial style-transfer systems. Some operate as surface paraphrasers: they swap synonyms, alter sentence order, and vary transitions. Others present themselves as detector-aware, aiming specifically to perturb the statistical signals that detectors use, such as uniformity, repeated framing, low sentence-length variance, or highly regular rhetorical structure. Stronger systems likely mix semantic preservation objectives with anti-detection objectives.</p>
+                  <p>The core tension is quality degradation. The more aggressively a humanizer pushes text away from a detector’s learned AI region, the greater the risk of introducing semantic drift, awkward wording, logical distortion, fake specificity, or citation mismatch. That is why many humanizer products simultaneously promise “same meaning” and “pass detectors”: they are selling a difficult optimization problem as a one-click UI event.</p>
+                </div>
+                <div class="mode-block coder">
+                  <h4>Coder View</h4>
+                  <pre>def humanize(text, mode):
+    plan = analyze(text,
+                   tone=True,
+                   repetition=True,
+                   sentence_variance=True,
+                   detector_risk=True)
+    candidate = rewrite(text, style_mode=mode)
+    candidate = enforce_constraints(candidate,
+                                    preserve_meaning=True,
+                                    vary_rhythm=True,
+                                    reduce_ai_tells=True)
+    maybe_rescore(candidate)
+    return candidate</pre>
+                  <p>Some public products explicitly advertise built-in rescanning against external detectors. That suggests a loop of generate -> estimate detector risk -> rewrite again, whether via internal heuristics or external APIs.</p>
+                </div>
+                <div class="mode-block plain">
+                  <h4>Plain English</h4>
+                  <p>A humanizer is basically trying to take AI writing that sounds too smooth or too generic and make it sound less predictable. It may break up long patterns, swap out common phrases, vary the rhythm, or push the tone toward something more casual, academic, or personal. But even if it sounds more human, that does not prove a human wrote it.</p>
+                </div>
+                <div class="mode-block inference">
+                  <h4>What We Can Only Infer</h4>
+                  <p><span class="badge inferred">[INFERRED]</span> The strongest commercial humanizers probably win less by “understanding humanity” and more by learning what current detectors dislike. In other words, they are not solving authorship; they are solving classification boundaries.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="section" id="part-2" data-search="product dossiers grammarly gptzero zerogpt winston turnitin copyleaks originality sapling quillbot undetectable stealthgpt hix humanize">
+          <div class="section-heading">
+            <h2>Part II: Product Dossiers</h2>
+            <p>Every product below uses the same skeleton so comparisons do not rely on memory. The goal is not to flatten differences but to keep the questions consistent.</p>
+          </div>
+
+          <details class="product-dossier" open id="grammarly-core" data-search="grammarly core docs browser mobile tone plans grammar plagiarism citations">
+            <summary>
+              <div>
+                <h3>Grammarly Core Platform</h3>
+                <div class="product-meta">AI writing assistant and communication platform spanning grammar, tone, rewriting, AI prompts, docs, browser, desktop, and mobile.</div>
+              </div>
+              <span class="badge official">Writing Platform</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p><span class="badge official">[OFFICIAL]</span> Grammarly is the best-established mainstream writing-assistance suite in this corpus. Its plans page publicly markets spelling and grammar correction, tone support, rewrites, AI prompts, plagiarism detection, and AI-text detection, with availability spread across Free, Pro, and Enterprise tiers. The platform now also includes <a href="https://support.grammarly.com/hc/en-us/articles/38552281546765-Docs-Grammarly-s-new-AI-writing-surface-user-guide">Docs</a> and cross-app assistance through browser, desktop, and mobile surfaces.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Grammarly positions itself as a communication platform rather than a narrow checker. Public product pages emphasize clarity, tone, sentence rewrites, multilingual assistance, plagiarism, AI prompts, and integrated AI detection, all framed as “responsible AI use” rather than mere content generation.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Grammar, spelling, and punctuation correction</li><li>Tone detection and tone suggestions</li><li>Full-sentence rewrites</li><li>Generative prompts</li><li>Plagiarism detection</li><li>AI-text detection in paid tiers</li><li>Docs writing surface with agents</li><li>Browser extension for 1M+ apps/sites</li><li>Windows, Mac, iOS, Android support</li><li>Citations and AI-related transparency features</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Users type into a supported surface, receive inline writing suggestions, optionally call AI features, and can move into specialized flows such as Docs, plagiarism checks, AI detection, or Authorship reporting. Public pages show separate entry points for browser, mobile, tone tools, AI detector, and AI humanizer.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge inferred">[INFERRED]</span> Grammarly’s core stack likely combines rule systems, learned ranking models, classifier layers for tone/clarity, and generative agents for rewriting. It is not one monolithic LLM wrapper. The breadth of features suggests pipeline orchestration rather than a single-model product architecture.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: very broad workflow coverage and strong surface integration</li><li>Strength: process-oriented tools such as Docs and Authorship</li><li>Weakness: public claims are broad, while low-level model detail is sparse</li><li>Weakness: tier boundaries matter; some advanced verification features are paid</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Grammarly is unusually strong on mixed authorship because it couples surface-text analysis with Authorship tracking. That makes it one of the few vendors here that publicly frames process evidence as part of the solution.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p><span class="badge official">[OFFICIAL]</span> Grammarly publicly markets enterprise privacy/security and offers plan-level enterprise controls. Authorship documents what text and clipboard-derived attribution data it collects and how long report data is retained once shared.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Unlike most tools here, Grammarly can be the place where text is drafted, revised, scanned for AI, cited, and accompanied by a process report. That makes it less of a single-purpose detector and more of a writing-governance platform.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://www.grammarly.com/plans">Source: Grammarly plans and feature matrix</a>
+                <a href="https://support.grammarly.com/hc/en-us/articles/38552281546765-Docs-Grammarly-s-new-AI-writing-surface-user-guide">Source: Grammarly Docs user guide</a>
+                <a href="https://www.grammarly.com/browser">Source: Grammarly browser platform</a>
+                <a href="https://www.grammarly.com/mobile">Source: Grammarly mobile surface</a>
+                <a href="https://www.grammarly.com/tone">Source: Grammarly tone features</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="grammarly-detector" data-search="grammarly ai detector score raid rewrite explain percentage">
+            <summary>
+              <div>
+                <h3>Grammarly AI Detector</h3>
+                <div class="product-meta">Integrated detector that returns a percentage of text that appears AI-generated and ties directly into Grammarly rewriting and citation workflows.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Grammarly’s detector is positioned as a responsible-use tool rather than a disciplinary weapon. It lives inside the larger Grammarly ecosystem instead of a standalone detector-only brand.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> The public detector page claims 99% detection accuracy and says Grammarly ranks #1 on RAID’s independent benchmark. It also explicitly states that no detector can conclusively determine whether AI was used and that the score is an estimate, not proof.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Paste text or upload file</li><li>Scan for AI button</li><li>Percentage score for text appearing AI-generated</li><li>Paid agent for more detailed review and rewriting</li><li>Inline rewrite support tied to flagged phrases</li><li>Integration with citations and broader Grammarly suite</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Public flow: input text or upload a document, run the scan, receive a percentage, then optionally sign in or use paid features to inspect flagged areas and rewrite them. Inside supported paid surfaces, AI detection appears via Grammarly’s suggestion panel and related entry points.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> Grammarly says it segments text, analyzes sections for patterns linked to AI writing, and was trained on tens of thousands of human and AI texts created before 2021. <span class="badge inferred">[INFERRED]</span> The contemporary product likely goes beyond that baseline with additional updates, but the company does not publish a full architecture card.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: unusually explicit public caveat that detectors are not definitive</li><li>Strength: seamless rewrite loop after a scan</li><li>Weakness: limited public detail on model versions, thresholds, and benchmark composition</li><li>Weakness: strongest workflows are gated behind paid plans</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Public messaging highlights that users can see which parts “may be flagged as AI-generated” and then revise or cite. This is a mixed-authorship framing rather than a hard binary. When coupled with Authorship, Grammarly can move from text inference toward process evidence.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Ethically, Grammarly’s public language is more restrained than many detector competitors. It repeatedly frames AI detection as guidance. Privacy details live across Grammarly’s support and trust/security materials rather than just the detector page itself.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Its strongest unique feature is not the score by itself; it is the way the score plugs into rewrites, citations, and Authorship reporting inside one workflow.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://www.grammarly.com/ai-detector">Source: Grammarly AI Detector</a>
+                <a href="https://support.grammarly.com/hc/en-us/articles/28936304999949-AI-Detector-user-guide">Source: Grammarly AI Detector user guide</a>
+                <a href="https://support.grammarly.com/hc/en-us/articles/29548735595405-Introducing-Grammarly-Authorship">Source: Grammarly Authorship support article</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="grammarly-humanizer" data-search="grammarly humanizer voice presets custom voice upload six languages">
+            <summary>
+              <div>
+                <h3>Grammarly AI Humanizer</h3>
+                <div class="product-meta">Integrated AI-to-human rewriting tool that emphasizes tone presets, custom voice, and suite-level workflow integration.</div>
+              </div>
+              <span class="badge official">Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Grammarly markets its humanizer as part of a mature writing suite rather than as a pure “beat detectors” utility. Its language emphasizes authenticity, tone fit, and responsible use.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Grammarly says the Humanizer agent is built by linguists and backed by more than a decade of writing expertise, offers four preset styles, supports custom voice through writing samples, and works in six languages.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Paste text</li><li>Upload file</li><li>Try sample text</li><li>Four preset styles</li><li>Custom voice from writing samples</li><li>Six-language support</li><li>Links to AI detector, citations, plagiarism, and Authorship</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Public workflow: paste or upload AI text, click Humanize, get rewritten output, then use adjacent Grammarly tools if needed. The page also shows pathways into Authorship and AI detection for transparency and revision.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge inferred">[INFERRED]</span> Grammarly’s humanizer likely combines controllable rewrite prompting with style-conditioning and suite metadata, especially when a user provides writing samples for custom voice. That makes it more of a guided style-transfer system than a plain paraphraser.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: strongest “responsible workflow” framing in this humanizer set</li><li>Strength: custom voice is a meaningful differentiator</li><li>Weakness: less public detail on aggressive detector-bypass claims than dedicated bypass brands</li><li>Weakness: internal scoring logic is not publicly documented</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Public copy frames the tool as smoothing robotic phrasing while preserving meaning. It does not promise a universal pass rate against third-party detectors. That makes its positioning notably more conservative than HIX Bypass, StealthGPT, or Undetectable AI.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Grammarly explicitly tells users to follow AI-use guidelines and use transparency tools. That ethical framing is part of the product page itself, not an afterthought hidden in a help article.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Custom voice plus direct links to Authorship reporting make Grammarly’s humanizer distinctive: it humanizes, but also gives users a way to disclose and contextualize AI assistance.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://www.grammarly.com/ai-humanizer">Source: Grammarly AI Humanizer</a>
+                <a href="https://support.grammarly.com/hc/en-us/articles/29548735595405-Introducing-Grammarly-Authorship">Source: Grammarly Authorship support</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="gptzero" data-search="gptzero sentence paragraph document confidence mixed ai subclass api lms word add-in">
+            <summary>
+              <div>
+                <h3>GPTZero</h3>
+                <div class="product-meta">Standalone detector with sentence, paragraph, and document scoring; educator support; API; browser and Word integrations.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p><span class="badge official">[OFFICIAL]</span> GPTZero describes itself as a leading AI detector serving millions of users and organizations across education, hiring, publishing, and legal contexts. It is one of the most visible detection-first brands in the market.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p>GPTZero publicly says it detects AI on sentence, paragraph, and document level, and that advanced sentence scanning explains which sections disproportionately affect the final score. It reports confidence levels and mixed authorship categories rather than a simple binary.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Sentence, paragraph, and document analysis</li><li>Confidence labels</li><li>Mixed human/AI classification</li><li>Advanced sentence highlighting</li><li>API with code samples in 17 languages</li><li>Origin browser extension</li><li>Microsoft Word add-in</li><li>Educator and LMS support materials</li><li>Subclass categories including pure AI and AI-paraphrased text in beta</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste or upload text, run a scan, inspect overall AI probability and mixed/human/AI labels, then drill into highlighted sections. In advanced scanning, sentence impact and confidence are shown to explain which parts are driving the model’s judgment.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> GPTZero says its model is trained on a large, diverse corpus of human-written and AI-generated text with a focus on English prose. The company explicitly distinguishes document-level prediction from local sentence impact. <span class="badge inferred">[INFERRED]</span> That separation strongly suggests a multi-stage scoring system rather than a single-pass sentence classifier.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: unusually rich explanation layer for sentence impact and confidence</li><li>Strength: serious public support ecosystem for API, educators, browser, and Word</li><li>Weakness: detailed model internals remain proprietary</li><li>Weakness: public help content is clearer than the marketing page, so workflow understanding requires reading support docs</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>GPTZero explicitly supports mixed results and AI-paraphrased subclass outputs in newer model versions. That makes it one of the more direct vendors in acknowledging that “AI-assisted” is not the same as “pure AI.”</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>API and support FAQs discuss ownership, data handling, rate limits, and result interpretation. Ethically, GPTZero’s help docs repeatedly emphasize that scores should be interpreted with care and confidence levels matter.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Its public interpretability layer is one of the best in this corpus. GPTZero does not just return a score; it tries to explain which sentences are driving the score and how confident the system is in that judgment.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://support.gptzero.me/articles/1087723304-what-is-gptzero">Source: What is GPTZero?</a>
+                <a href="https://support.gptzero.me/articles/7549392421-how-do-i-interpret-results-from-gptzero-s-advanced-sentence-scanning">Source: Advanced sentence scanning interpretation</a>
+                <a href="https://support.gptzero.me/articles/7719430400-how-do-i-interpret-gptzero-s-new-ui-since-january-17-2024-with-confidence-scores-and-mixed-results">Source: Mixed results and confidence UI</a>
+                <a href="https://support.gptzero.me/hc/en-us/articles/15525014408215-How-can-I-get-the-API-and-request-code-samples">Source: GPTZero API docs entry</a>
+                <a href="https://support.gptzero.me/hc/en-us/categories/15129568496919-Origin-Extension">Source: GPTZero Origin extension support</a>
+                <a href="https://support.gptzero.me/hc/en-us/categories/15528247981463-Microsoft-Word-Add-In">Source: GPTZero Word add-in support</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="zerogpt-detector" data-search="zerogpt detector deepanalyse upload percentage 98.5 accuracy free">
+            <summary>
+              <div>
+                <h3>ZeroGPT AI Detector</h3>
+                <div class="product-meta">Standalone detector advertising free use, upload support, percentage outputs, and “DeepAnalyse” style proprietary analysis language.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>ZeroGPT is a highly visible web detector brand aimed at students, educators, and general users who want a simple paste/upload flow and a fast AI-origin percentage. It tends to market certainty more aggressively than Grammarly or Turnitin.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> The current public page claims 98.5% accuracy, 200K+ active users, and free availability. It says the tool is trained on a large and diverse set of AI and human writing and uses NLP, machine learning, deep neural networks, and pattern recognition.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Paste text</li><li>Upload document</li><li>Character-limited free input box</li><li>Percentage score</li><li>“Detect origin” action</li><li>Simple three-step workflow marketing</li><li>Prominent accuracy and user-count badges</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste or upload text, run the detection action, receive a percentage-based breakdown. The public site emphasizes speed and simplicity over explanation depth.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> ZeroGPT publicly lists broad technology categories but does not publish a technical paper, model card, release notes, or detailed thresholding explanation on the surfaced pages reviewed here. <span class="badge inferred">[INFERRED]</span> This suggests a classifier-plus-heuristic production stack whose public transparency is thin relative to peers like GPTZero, Turnitin, or even Sapling.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: low-friction public workflow</li><li>Strength: easily understandable percentage UI</li><li>Weakness: much lower transparency about methodology and calibration</li><li>Weakness: accuracy marketing is stronger than public evidence detail</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Public messaging emphasizes broad identification rather than nuanced mixed-authorship analysis. ZeroGPT is therefore easier to use casually, but less informative for careful institutional review.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Privacy and data-handling information is less prominent in the public surfaces reviewed here than it is for Grammarly, Copyleaks, or Winston AI. That does not imply poor privacy in itself, but it does reduce transparency.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>ZeroGPT’s strongest differentiator is market visibility and simplicity, not unusually rich interpretability. It is a “quick answer” detector more than a process-oriented verification system.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://zerogpt.org/ai-detector">Source: ZeroGPT AI detector page</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="zerogpt-humanizer" data-search="zerogpt humanizer humanize ai rewrite bypass">
+            <summary>
+              <div>
+                <h3>ZeroGPT AI Humanizer</h3>
+                <div class="product-meta">Humanizer paired with the ZeroGPT brand, positioned as a companion rewrite layer for AI-origin concerns.</div>
+              </div>
+              <span class="badge inferred">Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="note"><strong>Verification note:</strong> the ZeroGPT detector surface is easy to verify directly, but the humanizer surface is less cleanly documented in the public results available during this build. The analysis below is therefore more conservative and more heavily marked as inference.</div>
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p><span class="badge inferred">[INFERRED]</span> ZeroGPT’s humanizer appears to function as the companion opposite of its detector: users who worry about AI flags can move from detection to rewriting inside the same brand family.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge inferred">[INFERRED]</span> Public claims across brand-adjacent pages and search listings frame the humanizer around sounding more natural, preserving intent, and reducing detector-triggering patterns. Public technical detail remains sparse.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Likely paste-and-rewrite UI</li><li>Companion relationship to the detector brand</li><li>Natural-language and “humanized” output framing</li><li>Potential upload/sample flows, but not fully verified in this build</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p><span class="badge inferred">[INFERRED]</span> The expected public flow is input text -> run rewrite -> compare output against detector expectations, but I am not labeling button-level specifics as fully verified without a cleaner official surface capture.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge inferred">[INFERRED]</span> Most likely a paraphrase or rewrite stack focused on sentence smoothing, lexical substitution, and rhythm variation. There is not enough public evidence here to responsibly claim more.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: brand synergy with detector workflow</li><li>Weakness: low public methodological transparency</li><li>Weakness: less verifiable public product detail than Grammarly or QuillBot</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>As a detector-adjacent humanizer, its purpose is implicitly bypass-oriented, but public nuance around ethics, disclosure, or partial-AI collaboration is less prominent than in Grammarly’s messaging.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Public privacy and retention detail was not as readily surfaced during this build. Users should treat this lack of prominent public documentation as a due-diligence gap rather than assume invisible safeguards.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>The main distinctive feature is brand pairing: detect under ZeroGPT, then rewrite under ZeroGPT. That is a common commercial pattern in the current ecosystem.</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="winston-ai" data-search="winston ai detector human score prediction map ocr plagiarism fact checker writing feedback">
+            <summary>
+              <div>
+                <h3>Winston AI</h3>
+                <div class="product-meta">Content-analysis platform combining AI detection, plagiarism, fact checking, writing feedback, OCR-enabled uploads, and project management.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Winston AI positions itself as a broader verification platform rather than only an AI detector. The public help center now describes AI detection, plagiarism, fact checking, writing feedback, projects, sharing, and document storage.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Winston claims 99.98% accuracy on benchmark testing and says it supports detection across major models. It also explicitly warns that no tool should be treated as an automatic guilty verdict.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>New text scan button</li><li>Document title and author fields</li><li>Paste, file upload, or URL import</li><li>Feature toggles: AI detector, plagiarism, fact checker, writing feedback</li><li>Human Score</li><li>AI Prediction Map with sentence buckets</li><li>Explain button for plain-language interpretation</li><li>Readability score</li><li>PDF download and share links</li><li>OCR-enabled JPG and PNG support</li><li>Projects and document navigation</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Start a scan, add text by paste/upload/URL, choose features with credit costs, run the scan, then inspect tabbed results. AI results show an overall Human Score, a sentence-level prediction map, and specific sections driving the score.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> Winston says it combines multiple machine-learning classifiers with a proprietary linguistic heuristic layer. <span class="badge inferred">[INFERRED]</span> The distinct separation between overall Human Score and sentence-level map suggests a hierarchical or ensemble scoring design, where local sentence analysis is explanatory rather than the sole basis of the final document verdict.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: one of the richest publicly documented product workflows in this corpus</li><li>Strength: OCR/image analysis support is unusual among text detectors</li><li>Strength: repeated public caveats about shorter text and mixed authorship</li><li>Weakness: “99.98% accuracy” is still a vendor benchmark claim, not a universal guarantee</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Winston directly discusses AI text run through paraphrasing tools and says heavily rewritten text can raise the Human Score while reducing confidence. It recommends using both overall Human Score and the AI Prediction Map for mixed-authorship cases.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p><span class="badge official">[OFFICIAL]</span> Winston’s help center says documents can be deleted, are encrypted, are not shared with other entities, and discusses whether scanned documents are used to improve data in dedicated privacy articles. Public privacy documentation is comparatively visible.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Winston’s “Explain” panel is distinctive because it translates the scan into plain-language narrative. The product also feels more like a document-analysis workstation than a pure detector widget.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://help.gowinston.ai/getting-started/what-does-winston-ai-do-exactly">Source: What Winston AI does</a>
+                <a href="https://help.gowinston.ai/getting-started/how-to-use-winston-ai-for-text-analysis">Source: Winston text-analysis workflow</a>
+                <a href="https://help.gowinston.ai/understanding-winston-ai/what-types-of-content-can-i-scan-with-winston-ai">Source: Winston content types and mixed authorship</a>
+                <a href="https://help.gowinston.ai/understanding-ai-detection/are-ai-detection-tools-accurate">Source: Winston accuracy and limitations</a>
+                <a href="https://help.gowinston.ai/privacy-matters/are-my-documents-private">Source: Winston privacy page</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="turnitin" data-search="turnitin ai writing report instructor access 300 words bypass purple cyan 20 percent">
+            <summary>
+              <div>
+                <h3>Turnitin AI Writing Indicator</h3>
+                <div class="product-meta">Institutional detector embedded in Turnitin workflows, visible primarily to administrators and instructors, with explicit file requirements and score-interpretation guidance.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Turnitin is the dominant educational integrity brand in this corpus. Its AI-writing feature is not marketed as a free public toy; it is a licensed institutional feature layered into existing Turnitin and iThenticate environments.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Turnitin repeatedly says the report is probabilistic and should not be used as the sole basis for adverse action. It also now publicly documents AI bypasser detection as part of 2025+ model updates.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Institutional licensing via account manager</li><li>AI Writing tab or side-panel indicator</li><li>Overall percentage detected as AI</li><li>Submission Breakdown with cyan and purple categories</li><li>Asterisk handling for scores under 20%</li><li>File requirements: .docx, .pdf, .txt, .rtf</li><li>300-word minimum, 30,000-word maximum, 100 MB cap</li><li>Supported languages: English, Spanish, Japanese</li><li>Institutional AI-writing statistics dashboards</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Institutional users open a submission inside the new or classic Similarity Report, click the AI Writing tab or indicator, view the overall score, then inspect highlighted text and the submission breakdown. Scores from 1–19% are suppressed into an asterisk zone to reduce false-positive misinterpretation.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> Turnitin discloses release-note-level changes rather than full model architecture. It publicly confirms separate handling for likely AI-generated text and likely AI-paraphrased text and documents ongoing model updates to improve recall while keeping low false-positive rates.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: strongest public institutional caution language in the corpus</li><li>Strength: explicit low-score suppression below 20%</li><li>Strength: formal file requirements and report-state documentation</li><li>Weakness: ordinary students cannot inspect the feature directly in the same way as free public tools</li><li>Weakness: model internals are proprietary and deeply opaque</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Turnitin now separates likely AI-generated text from likely AI-generated text that was also likely AI-paraphrased, with color-coded categories. That is a major acknowledgement of the bypasser arms race and one of the clearest public vendor responses to it.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Turnitin’s help guides frame the tool as an educator-facing support system and repeatedly instruct institutions to treat it as one data point. Ethically, this is stronger public guidance than many commercial brands offer.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>The most notable feature is not the raw score but the institutional interpretation policy around it: sub-20% score suppression, instructor-only visibility, and strong discouragement of sole-reliance decision making.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://helpcenter.turnitin.com/hc/en-us/articles/31880737970701-How-can-I-access-the-AI-Writing-Detection-feature">Source: Turnitin access requirements</a>
+                <a href="https://guides.turnitin.com/hc/en-us/articles/22774058814093-Using-the-AI-Writing-Report">Source: Using the AI Writing Report</a>
+                <a href="https://guides.turnitin.com/hc/en-us/articles/27139000787853-How-should-I-review-the-AI-Writing-report">Source: How to review the AI Writing Report</a>
+                <a href="https://guides.turnitin.com/hc/en-us/articles/28234943089933-File-requirements-for-an-AI-writing-report">Source: File requirements</a>
+                <a href="https://guides.turnitin.com/hc/en-us/articles/28294949544717-AI-writing-detection-model">Source: AI-writing detection model release notes</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="copyleaks" data-search="copyleaks ai logic ai phrases source match 30 languages soc 2 lms api">
+            <summary>
+              <div>
+                <h3>Copyleaks AI Detector</h3>
+                <div class="product-meta">Enterprise-grade integrity platform with text, image, deepfake, plagiarism, LMS, browser, docs, and “AI Logic” transparency features.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Copyleaks has evolved from plagiarism into a multi-product integrity platform. It actively markets to education, enterprise governance, model training, IP protection, and unauthorized LLM use.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> The homepage claims over 99% accuracy on internal English benchmarks, support for 30+ languages, model coverage across ChatGPT, Gemini, DeepSeek, and Claude, and multiple independent studies. It also foregrounds compliance credentials such as SOC 2, SOC 3, GDPR, PCI DSS, and NIST-related materials.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>AI text detector</li><li>AI image detector</li><li>Deepfake detector</li><li>Plagiarism checker</li><li>Grammar checker</li><li>Text moderation</li><li>API integration</li><li>LMS integration</li><li>Browser extension</li><li>Google Docs add-on</li><li>AI Logic with AI Phrases and AI Source Match</li><li>Education pricing with Canvas, Moodle, D2L, Schoology, Sakai, Edsby, Blackboard</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>The product flow varies by channel, but the public AI Logic layer is the clearest view: scan text, then inspect which phrases are unusually AI-like and whether any text resembles previously published AI-generated content. The broader platform supports institution-level analytics and workflow integration rather than only single-user paste checks.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> Copyleaks says AI Logic uses a layered detection approach, centered on AI Phrases and AI Source Match. <span class="badge inferred">[INFERRED]</span> That wording strongly implies multi-angle ensemble analysis rather than a single scalar classifier, with explanatory artifacts generated after the core detection stage.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: breadth of platform and compliance signaling</li><li>Strength: AI Logic is one of the more explicit transparency products in the market</li><li>Strength: text + image + deepfake support extends beyond standard essay detection</li><li>Weakness: technical detail still stops short of a full public methodology paper</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Copyleaks publicly markets paraphrasing and character-manipulation detection, signaling a strong interest in anti-bypass positioning. AI Logic’s phrase-level surfacing is especially relevant when content is partly rewritten rather than fully machine-generated.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Privacy/compliance visibility is among the strongest in the corpus. The platform publicly emphasizes GDPR, SOC 2/3, PCI DSS, and enterprise governance use cases, suggesting it sells assurance and auditability as much as accuracy.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>AI Logic is the differentiator: it tries to show <em>why</em> text looks AI-influenced through phrase-level frequency and source-match concepts instead of only returning a number.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://copyleaks.com/">Source: Copyleaks homepage</a>
+                <a href="https://copyleaks.com/ai-logic">Source: Copyleaks AI Logic</a>
+                <a href="https://copyleaks.com/get-started">Source: Copyleaks integrations</a>
+                <a href="https://docs.copyleaks.com/reference/actions/ai-image-detector/check/">Source: Copyleaks AI image detector docs</a>
+                <a href="https://copyleaks.com/pricing/">Source: Copyleaks pricing and LMS support</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="originality-ai" data-search="originality ai lite turbo academic multilingual credits api site scans chrome extension">
+            <summary>
+              <div>
+                <h3>Originality.ai</h3>
+                <div class="product-meta">Credit-based detector and publishing workflow platform with multiple detector models, plagiarism, readability, fact-checking, site scans, and API access.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Originality.ai is one of the most aggressive detector-focused commercial platforms, especially for publishers, SEO teams, and agencies. It also increasingly positions itself for educational use with model-specific messaging.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Originality markets 99%+ accuracy across current flagship models in its own studies and openly differentiates model tiers: Lite, Turbo, Academic, and Multilingual. It also repeatedly emphasizes that AI detection is probabilistic and context matters.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Credit-based AI scanning</li><li>Plagiarism checker</li><li>Readability checker</li><li>Grammar and spelling</li><li>Fact checking aid</li><li>Deep scan</li><li>SEO content optimizer</li><li>Shareable and downloadable reports</li><li>Chrome extension with writing replay language</li><li>Full-site scans and URL scans</li><li>API access</li><li>Lite, Turbo, Academic, Multilingual models</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Users buy or receive credits, choose scan type, optionally combine AI and plagiarism checks, then inspect shareable reports. Agencies and publishers can scan URLs or full sites rather than just pasted text, making this a workflow platform for content governance.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> Originality publicly differentiates use cases across detector models: Lite allows minor AI editing, Turbo is zero-tolerance and more bypass-sensitive, Academic targets STEM/academic content with low false positives, and Multilingual expands language coverage. <span class="badge inferred">[INFERRED]</span> That strongly implies separate classifiers or threshold/calibration stacks rather than one universal model.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: unusually explicit model-tiering and use-case segmentation</li><li>Strength: strong publisher/SEO workflow features</li><li>Strength: public discussion of false positives and model tradeoffs</li><li>Weakness: many performance claims come from Originality’s own studies</li><li>Weakness: credit-based pricing can be cognitively heavier than simple subscriptions</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Originality openly discusses light AI editing, paraphrased AI, and bypass tactics. Turbo is framed for zero tolerance, Lite for lower false positives, and Academic for education-sensitive contexts. That makes it one of the more nuanced vendors in public segmentation, even if still self-serving.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Originality’s product framing is heavily geared toward editorial accountability. It does not hide its governance use case, but users should remember that governance incentives can encourage more aggressive flagging if tuned for risk aversion.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>The most important differentiator is model specialization. Few detector brands publicly expose “use this model if you tolerate light AI editing” versus “use this if you want zero tolerance” as directly as Originality does.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://originality.ai/pricing">Source: Originality.ai pricing and features</a>
+                <a href="https://help.originality.ai/en/article/how-many-words-does-a-credit-scan-1uwp6dq/">Source: Credit scan explanation</a>
+                <a href="https://originality.ai/blog/academic-model">Source: Originality.ai Academic model</a>
+                <a href="https://originality.ai/blog/ai-content-detection-accuracy">Source: Originality.ai detector model overview</a>
+                <a href="https://originality.ai/blog/ai-detectors-think-everything-is-ai">Source: Originality false-positive discussion</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="sapling" data-search="sapling detector extension 50k pdf docx perplexity sentence scores api sdk">
+            <summary>
+              <div>
+                <h3>Sapling AI Detector</h3>
+                <div class="product-meta">Lightweight but technically candid detector with extension support, per-sentence perplexity scores, and public changelog notes.</div>
+              </div>
+              <span class="badge official">Detector</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Sapling occupies a middle space between free public utility and developer-facing platform. It markets AI detection, grammar, autocomplete, snippets, rephrase, and API/SDK tools from a team associated with major research institutions and companies.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Sapling says internal benchmarks catch more than 97% of AI-generated texts while keeping false positives below 3%, though it notes that benchmark texts tend to be longer and may not represent every use case.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Paste text with token count</li><li>Character limits for free and paid usage</li><li>PDF and DOCX upload buttons</li><li>Overall probability score</li><li>Sentence perplexity scores</li><li>Chrome extension with on-page detect button</li><li>API docs access</li><li>Editable text and recheck flow</li><li>Public changelog</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste text, inspect overall probability and highlighted sections, optionally show sentence perplexity scores, then edit the analyzed text and recheck. File-upload buttons extract text first and then run the text-based system.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> Sapling explicitly says the whole-text detector and per-sentence detector use complementary techniques and that cliché or simplistic sentences may be flagged for low perplexity. This is one of the clearest public admissions that production detection is multi-technique rather than one unified scalar.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: unusually transparent about limitations and short-text risk</li><li>Strength: public changelog is rare and useful</li><li>Strength: direct exposure of sentence perplexity scores teaches users something real</li><li>Weakness: simpler UI and lower brand visibility than larger commercial rivals</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>Sapling says the system becomes more accurate after roughly 50 words and recommends using judgment alongside both detectors. The existence of text editing plus recheck makes it useful for studying how incremental rewrites change scores.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Public pages emphasize contact and API access rather than expansive policy prose, but the core ethical stance is clear: no current detector should be a standalone basis for deciding authorship.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Sentence perplexity exposure is a major differentiator. Sapling effectively teaches users one of the core statistical ideas behind AI detection instead of hiding it completely.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://nyc.sapling.ai/ai-content-detector">Source: Sapling AI Detector</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="quillbot" data-search="quillbot humanizer paraphraser modes synonym slider freeze words compare modes detector">
+            <summary>
+              <div>
+                <h3>QuillBot Paraphraser / Humanizer</h3>
+                <div class="product-meta">Paraphrasing-centered writing platform with a dedicated Humanizer, multiple rewrite modes, synonym control, freeze words, compare modes, and adjacent detector/plagiarism tools.</div>
+              </div>
+              <span class="badge official">Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>QuillBot sits between general writing aid and humanizer. It is fundamentally a rewrite platform, and its Humanizer is one mode or tool inside a larger ecosystem of paraphrasing, grammar, AI detection, plagiarism, citation, translation, and summarization.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> QuillBot says its Humanizer is trained on tens of thousands of human texts, evolves with AI, and can humanize text from ChatGPT, Gemini, Claude, and DeepSeek. It also encourages responsible disclosure of AI use and links to academic-integrity materials.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>AI Humanizer tool</li><li>Paraphraser modes: Standard, Fluency, Humanizer, Formal, Academic, Simple, Creative, Expand, Shorten, Custom</li><li>Synonym Slider with four levels</li><li>Freeze Words</li><li>Compare Modes</li><li>Settings gear with quotation handling, contractions, active voice, highlights, legend, change visibility</li><li>Document upload and export</li><li>Chrome integration and broader tool suite</li><li>Premium “Human score,” tone insights, history, and LLM integration</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste or upload text, choose a paraphrase mode or Humanizer, set synonym strength where supported, optionally freeze words, click Humanize or Paraphrase, compare results, then copy or export. Premium users get additional score/history/insight features.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> QuillBot publicly describes fine-tuned models, extensive instructions, sentence-length and flow optimization, and tens of thousands of human texts. <span class="badge inferred">[INFERRED]</span> The settings architecture suggests a layered rewrite engine with both learned generation and rule-based post-controls.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: richest public control surface among mainstream paraphrasers</li><li>Strength: excellent user-visible manipulability through modes and sliders</li><li>Strength: responsible-use language is more mature than pure bypass brands</li><li>Weakness: surface-level paraphrasing can drift meaning if users overuse synonym intensity</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>QuillBot’s Humanizer is explicitly marketed as smoothing AI “tells,” but its strongest value may be user-controlled rewriting rather than guaranteed bypass. Features like Freeze Words are especially useful when users need term preservation in academic, legal, or technical contexts.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>QuillBot’s public humanizer page explicitly tells users to follow institutional or workplace AI guidelines. This is still a commercial product, but it does not hide ethical caveats.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Synonym Slider, Freeze Words, Compare Modes, and visible settings make QuillBot one of the most inspectable public rewrite interfaces in the corpus.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://quillbot.com/ai-humanizer">Source: QuillBot AI Humanizer</a>
+                <a href="https://help.quillbot.com/hc/en-us/articles/35854318883351-What-are-modes-in-the-QuillBot-Paraphraser-and-how-do-I-use-them">Source: QuillBot modes</a>
+                <a href="https://help.quillbot.com/hc/en-us/articles/35854455010583-What-is-the-Synonym-Slider-in-QuillBot">Source: Synonym Slider</a>
+                <a href="https://help.quillbot.com/hc/en-us/articles/35855113357847-What-is-Freeze-Words-in-QuillBot">Source: Freeze Words</a>
+                <a href="https://help.quillbot.com/hc/en-us/articles/35855140458391-What-is-Compare-Modes-in-QuillBot">Source: Compare Modes</a>
+                <a href="https://help.quillbot.com/hc/en-us/articles/35855001909143-Where-are-the-Paraphraser-settings-located">Source: Paraphraser settings</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="undetectable-ai" data-search="undetectable ai detector humanizer multi detector 22 million languages human auto typer">
+            <summary>
+              <div>
+                <h3>Undetectable AI</h3>
+                <div class="product-meta">High-visibility detector-plus-humanizer brand explicitly built around passing detectors, with large public usage claims and aggressive success messaging.</div>
+              </div>
+              <span class="badge official">Detector + Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Undetectable AI is one of the clearest “bypass-first” brands in the market. Unlike Grammarly or QuillBot, its public identity centers on making AI-generated content “more human-like” so it can pass detectors.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> The site claims 99%+ detection accuracy, prominent media mentions, millions of users, multilingual support, and a money-back-style promise if humanized output is flagged as non-human. Its humanizer page explicitly says output should score as human in detectors.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>AI detector</li><li>AI humanizer</li><li>Input modes and sample texts from ChatGPT, Claude, DeepSeek, Human</li><li>Basic vs Stealth humanization modes</li><li>Content-type presets: general writing, essay, article, marketing, story</li><li>Up to 10,000-character humanizer input on public page</li><li>Human Auto Typer</li><li>API compatibility</li><li>AI image detector and broader expanding tool suite</li><li>Multilingual detection/humanization support</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste AI text, choose a mode/preset, run humanization, inspect output, and optionally use built-in detector flows and other tools. Pricing pages emphasize unlimited AI detection even on consumer plans.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge inferred">[INFERRED]</span> Undetectable almost certainly uses a detector-aware rewrite loop, because its public promise is not just “sound better” but “score as human.” That usually requires iterative optimization against known detector response patterns rather than a plain paraphrase pass.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: very clear product purpose and large public feature surface</li><li>Strength: strong multilingual support messaging</li><li>Weakness: marketing language is more absolute than the underlying problem warrants</li><li>Weakness: public methodology detail is far weaker than the strength of its claims</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>This brand is fundamentally about bypass handling. It directly markets detection of paraphrased AI and humanization of AI content to “score as human.” That makes it one of the clearest commercial illustrations of the detector-humanizer arms race.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Ethically, the site openly courts high-stakes use cases like work, school, and publishing. That transparency about intent is valuable analytically, even if it raises obvious academic-integrity concerns.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Its unique feature is not hidden sophistication; it is commercial bluntness. Few brands say so directly that the point is to humanize AI text so detector systems treat it as human.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://undetectable.ai/">Source: Undetectable AI detector</a>
+                <a href="https://undetectable.ai/ai-humanizer">Source: Undetectable AI Humanizer</a>
+                <a href="https://undetectable.ai/pricing-a">Source: Undetectable AI pricing and feature list</a>
+                <a href="https://undetectable.ai/blog/what-is-undetectable-ai/">Source: Official blog explanation</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="stealthgpt" data-search="stealthgpt humanizer detector citations bibliography stealth writer api">
+            <summary>
+              <div>
+                <h3>StealthGPT</h3>
+                <div class="product-meta">Purpose-built undetectable-writing platform combining humanization, detection, writing generation, citations, bibliography tools, and API offerings.</div>
+              </div>
+              <span class="badge official">Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>StealthGPT is less a general writing assistant than a dedicated “undetectable AI” suite. Its branding explicitly revolves around bypassing Turnitin, GPTZero, and similar detectors.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Public pages claim the humanizer bypasses all AI detectors, works with any AI writer, supports 1,000+ languages, and can create undetectable papers, reports, and blogs. The homepage also advertises free detector access and document-building with citations and bibliographies.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Detect AI Writing button</li><li>Humanize AI Writing button</li><li>Human Score, Spelling Score, Grammar Score, Similarity Score</li><li>Stealth Writer</li><li>Study Simulator</li><li>SEO Writer</li><li>Chat with PDF</li><li>Chrome extension</li><li>Sentence-level citation insertion</li><li>Auto-generated bibliographies</li><li>Developer API with word-based pricing</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste text, run detector or humanizer, inspect scores, then iterate or move into Stealth Writer and document-building flows. The homepage frames this as an end-to-end content creation pipeline rather than a single rewrite widget.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge inferred">[INFERRED]</span> StealthGPT appears to combine document generation with detector-aware rewriting and evaluation. The presence of separate standard and business API pricing, plus a flat-fee article endpoint, suggests multiple backend paths for short-form rewriting versus larger content generation.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: rich feature stack for users who want an all-in-one bypass-oriented workflow</li><li>Strength: API availability and pricing detail are public</li><li>Weakness: public claims are extremely sweeping relative to disclosed evidence</li><li>Weakness: “1,000+ languages” is a very broad claim that should be interpreted cautiously</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>The entire product is designed for bypass and humanization. Its combination of detector readout plus rewrite loop makes the adversarial structure especially explicit: it lets users see the problem and then mutate the text against it.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>FAQ sections publicly ask whether the system bypasses Turnitin and whether teachers can detect humanized AI text. That candor helps analysts understand product intent, even though the ethical implications for academic misuse are obvious.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Citation insertion and bibliography generation inside an undetectable-writing platform make StealthGPT especially targeted at academic and report-style writing, not just SEO or social content.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://www.stealthgpt.ai/">Source: StealthGPT homepage</a>
+                <a href="https://www.stealthgpt.ai/feature/ai-humanizer">Source: StealthGPT AI Humanizer</a>
+                <a href="https://www.stealthgpt.ai/ai-checker">Source: StealthGPT AI Checker</a>
+                <a href="https://docs.stealthgpt.ai/api-reference/pricing">Source: StealthGPT API pricing</a>
+                <a href="https://www.stealthgpt.ai/pricing">Source: StealthGPT pricing</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="hix-bypass" data-search="hix bypass fast balanced aggressive built in detector 50 languages">
+            <summary>
+              <div>
+                <h3>HIX Bypass</h3>
+                <div class="product-meta">Dedicated bypass platform advertising humanization modes, built-in detector checks, 50+ languages, and detector-specific success claims.</div>
+              </div>
+              <span class="badge official">Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>HIX Bypass is positioned as an undetectable AI writer/humanizer inside the larger HIX ecosystem. Its marketing is highly detector-specific and frequently names target brands it claims to beat.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> Public pages claim 99% to 99.5% success rates, detector bypass for GPTZero, Copyleaks, ZeroGPT, Winston, and Originality.ai, multilingual support in 50+ languages, and built-in detector aggregation.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Paste, upload, or sample input</li><li>Fast, Balanced, and Aggressive modes</li><li>Built-in AI detector using multiple checkers</li><li>Basic and Pro plans with word/request caps</li><li>Detector-targeted marketing claims</li><li>50+ language support</li><li>ChatGPT watermark removal claim</li><li>No-distortion humanization on higher tier</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Paste or upload text, choose a humanization mode, run the rewrite, then inspect built-in detector outcomes to see if the text “successfully bypasses” AI detection. This is one of the most openly iterative public bypass workflows.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> HIX says it is trained on millions of human-written datasets and uses sophisticated algorithmic technology plus advanced NLP techniques. <span class="badge inferred">[INFERRED]</span> The built-in detector loop strongly suggests generate-and-rescore optimization rather than one-pass rewriting.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: very explicit operational workflow for bypass use cases</li><li>Strength: multiple rewrite modes and integrated detector feedback</li><li>Weakness: public claims are extremely strong relative to disclosed evidence</li><li>Weakness: detector-specific guarantees are inherently unstable as models update</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>HIX Bypass is fundamentally a bypass tool. Its public identity assumes users want to change detector outcomes, not merely improve readability. That makes it analytically important even when one disagrees with the intended use.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>The product openly markets to students and detector-avoidance scenarios. From an ethics standpoint, it is one of the clearest examples in this corpus of commercializing academic-risk workflows.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>Fast/Balanced/Aggressive modes plus integrated detector checks make HIX Bypass one of the most direct public embodiments of the cat-and-mouse loop.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://bypass.hix.ai/">Source: HIX Bypass homepage</a>
+                <a href="https://bypass.hix.ai/humanize-ai">Source: HIX humanize AI page</a>
+                <a href="https://bypass.hix.ai/ad/ai-humanizer">Source: HIX AI humanizer ad page</a>
+                <a href="https://bypass.hix.ai/ad/ai-detector">Source: HIX detector support</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="product-dossier" open id="humanize-ai" data-search="humanize ai pro ultra run academic formal flowing modes no signup">
+            <summary>
+              <div>
+                <h3>Humanize AI (`humanizeai.pro`)</h3>
+                <div class="product-meta">Free-first browser humanizer with many rewrite styles, broad bypass promises, no-sign-up language, and a public API docs beta.</div>
+              </div>
+              <span class="badge official">Humanizer</span>
+            </summary>
+            <div class="content">
+              <div class="dossier-grid">
+                <div class="dossier-block"><h4>1. Identity &amp; Market Position</h4><p>Humanize AI is a dedicated humanizer brand aimed at frictionless browser use. It markets itself as cost-free, browser-compatible, no-registration, and optimized to convert AI output from tools including ChatGPT, Bard, Jasper, Grammarly, and GPT-4.</p></div>
+                <div class="dossier-block"><h4>2. Official Claims</h4><p><span class="badge official">[OFFICIAL]</span> The site claims 100% originality, detector bypass against all systems, multilingual support, no-registration access, and preservation of meaning/context. It offers multiple rewrite styles including Free, Standard, Academic, Simple, Flowing, Informal, Formal, Expand, Shorten, and Custom, with an “Ultra run” option.</p></div>
+                <div class="dossier-block"><h4>3. Complete Public Feature Inventory</h4><ul><li>Paste text interface</li><li>Try sample</li><li>Multiple modes and tones</li><li>Captcha confirmation</li><li>Humanize AI button</li><li>Cross-device/browser compatibility claims</li><li>Multilingual support including English, Chinese, Russian, Arabic, Japanese</li><li>No registration required</li><li>API docs beta for programmatic humanization</li></ul></div>
+                <div class="dossier-block"><h4>4. Workflow Walkthrough</h4><p>Visit the site, paste text, complete captcha, click Humanize AI, review output, and optionally rerun until satisfied. The public explanation literally walks users through this sequence step by step.</p></div>
+                <div class="dossier-block"><h4>5. Methodology Deep-Dive</h4><p><span class="badge official">[OFFICIAL]</span> The site speaks in terms of advanced proprietary algorithms, contextual intelligence, sentiment analysis, and contextual preservation. The beta API documentation shows asynchronous task submission and retrieval, indicating the website’s “Ultra run” is backed by a task-processing service rather than purely in-browser logic.</p></div>
+                <div class="dossier-block"><h4>6. Strengths &amp; Weaknesses</h4><ul><li>Strength: highly accessible and mode-rich public interface</li><li>Strength: public API docs are a useful transparency clue</li><li>Weakness: bypass claims are far stronger than disclosed technical evidence</li><li>Weakness: method language is broad and marketing-heavy</li></ul></div>
+                <div class="dossier-block"><h4>7. Mixed Text &amp; Bypass Handling</h4><p>The site is very explicit that the purpose is to produce “human-like” text that detectors do not flag. It also claims to preserve SEO value, which signals an audience beyond students: marketers, bloggers, and agencies.</p></div>
+                <div class="dossier-block"><h4>8. Data Privacy &amp; Ethics</h4><p>Humanize AI promises confidentiality and no registration, but users should still treat any free browser humanizer carefully because privacy guarantees are only as strong as the operator’s actual backend practices and disclosures.</p></div>
+                <div class="dossier-block"><h4>9. Unique/Notable Features</h4><p>The “Ultra run” nomenclature and public API docs beta make Humanize AI more operationally transparent than some small competitors, even though the deeper model details are not published.</p></div>
+              </div>
+              <div class="source-list">
+                <a href="https://www.humanizeai.pro/">Source: Humanize AI homepage</a>
+                <a href="https://docs.humanizeai.pro/">Source: Humanize AI docs beta</a>
+                <a href="https://www.humanizeai.pro/blog/top-6-ai-humanizer-tools">Source: Humanize AI blog context</a>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="section" id="part-3" data-search="comparisons head to head tables detector humanizer evidence quality matrix">
+          <div class="section-heading">
+            <h2>Part III: Cross-Product Comparisons</h2>
+            <p>The tables below compress a lot of material, but they are best read after the dossiers. Most cells are intentionally short so patterns pop out quickly.</p>
+          </div>
+
+          <div class="comparison-block">
+            <h3>Comparison 1: Detector Head-to-Head</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tool</th>
+                    <th>Score Style</th>
+                    <th>Public Strength</th>
+                    <th>Transparency</th>
+                    <th>Mixed/Bypass Handling</th>
+                    <th>Notable Limits</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Grammarly</td><td>% of text appearing AI-generated</td><td>Integrated rewrite/citation/Authorship loop</td><td>Moderate</td><td>Good, especially with Authorship</td><td>Best features gated in paid workflow</td></tr>
+                  <tr><td>GPTZero</td><td>AI/human/mixed + confidence + sentence impact</td><td>Interpretability and educator tooling</td><td>Moderate-high</td><td>Strong; AI-paraphrased subclass discussed</td><td>Model internals proprietary</td></tr>
+                  <tr><td>ZeroGPT</td><td>Simple percentage</td><td>Low-friction public access</td><td>Low</td><td>Weakly documented</td><td>Thin public methodology</td></tr>
+                  <tr><td>Winston AI</td><td>Human Score + prediction map</td><td>Rich workflow, OCR, explain tab</td><td>High for workflow, medium for model detail</td><td>Strong public discussion</td><td>Vendor benchmark still internal</td></tr>
+                  <tr><td>Turnitin</td><td>% of qualifying text + report states</td><td>Institutional caution and file rules</td><td>High for policy, medium for internals</td><td>Strong; AI-paraphrased category documented</td><td>Not publicly testable by ordinary users</td></tr>
+                  <tr><td>Copyleaks</td><td>Platform scoring + AI Logic explanations</td><td>Enterprise scope and AI Logic</td><td>Moderate-high</td><td>Strong anti-paraphrase posture</td><td>Marketing breadth can outpace public detail</td></tr>
+                  <tr><td>Originality.ai</td><td>Model-specific detection scores</td><td>Model-tier specialization</td><td>Moderate</td><td>Very strong public segmentation</td><td>Many studies are self-published</td></tr>
+                  <tr><td>Sapling</td><td>Probability + sentence perplexity</td><td>Technical candor and changelog</td><td>High for a free-facing tool</td><td>Moderate</td><td>Less enterprise-style explainability</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="comparison-block">
+            <h3>Comparison 2: Humanizer Head-to-Head</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tool</th>
+                    <th>Approach Signal</th>
+                    <th>User Controls</th>
+                    <th>Bypass Explicitness</th>
+                    <th>Public Ethics Framing</th>
+                    <th>Main Tradeoff</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Grammarly</td><td>Voice-aware rewrite</td><td>Preset styles + custom voice</td><td>Low-moderate</td><td>Strong</td><td>Less explicit for detector gaming</td></tr>
+                  <tr><td>ZeroGPT Humanizer</td><td>Brand-paired rewrite</td><td>Weakly documented publicly</td><td>Moderate</td><td>Low visibility</td><td>Sparse transparency</td></tr>
+                  <tr><td>QuillBot</td><td>Mode-rich paraphrase/humanize</td><td>Very high</td><td>Moderate</td><td>Strong</td><td>Meaning drift at high rewrite intensity</td></tr>
+                  <tr><td>Undetectable AI</td><td>Detector-aware rewrite</td><td>Mode and content presets</td><td>Very high</td><td>Weak</td><td>Claims are stronger than public method detail</td></tr>
+                  <tr><td>StealthGPT</td><td>Undetectable document pipeline</td><td>Medium-high</td><td>Very high</td><td>Weak</td><td>Academic misuse posture is obvious</td></tr>
+                  <tr><td>HIX Bypass</td><td>Mode + integrated detector loop</td><td>High</td><td>Very high</td><td>Weak</td><td>Detector guarantees are unstable over time</td></tr>
+                  <tr><td>Humanize AI</td><td>Multi-style browser humanizer</td><td>High</td><td>Very high</td><td>Weak</td><td>Public method description is very generic</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="comparison-block">
+            <h3>Comparison 3: Same Concept, Different Score Semantics</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Concept</th>
+                    <th>Grammarly</th>
+                    <th>GPTZero</th>
+                    <th>Winston AI</th>
+                    <th>Turnitin</th>
+                    <th>Sapling</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Main number means…</td><td>% appearing AI-generated</td><td>Classification + AI probability + confidence</td><td>Human Score</td><td>% of qualifying text likely AI</td><td>Probability text is AI-generated</td></tr>
+                  <tr><td>Sentence highlighting means…</td><td>Paid-detail sections that may sound AI-generated</td><td>Sentences disproportionately affecting score</td><td>Prediction buckets by sentence</td><td>Highlighted qualifying text in report</td><td>Low-perplexity or AI-like sentences</td></tr>
+                  <tr><td>Low score caveat</td><td>No detector is definitive</td><td>Confidence labels vary by certainty</td><td>Borderline scores need more context</td><td>1–19% suppressed with asterisk</td><td>Short/general text more error-prone</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="comparison-block">
+            <h3>Comparison 4: Evidence Quality Ranking</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tier</th>
+                    <th>Products</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Higher public interpretability</td><td>Turnitin, Winston AI, Sapling, GPTZero</td><td>They publish more explicit guidance on score meaning, workflow states, or complementary techniques.</td></tr>
+                  <tr><td>Higher workflow transparency than model transparency</td><td>Grammarly, Copyleaks, Originality.ai, QuillBot</td><td>They show rich product surfaces and use cases but stop short of deep model disclosure.</td></tr>
+                  <tr><td>High claim intensity, lower method detail</td><td>ZeroGPT, Undetectable AI, StealthGPT, HIX Bypass, Humanize AI</td><td>They make strong performance or bypass claims with less public technical accountability.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="comparison-block">
+            <h3>Comparison 5: Detector–Humanizer Matrix</h3>
+            <p>There is no permanent winner in this race. Humanizers win when they successfully perturb detector features faster than detector models update. Detectors win when they retrain on fresh adversarial samples, use process evidence, or move beyond surface text alone.</p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Dynamic</th>
+                    <th>What humanizers try</th>
+                    <th>What detectors counter with</th>
+                    <th>Who has the durable edge?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Low-perplexity cues</td><td>Increase variance, restructure sentences</td><td>Classifier retraining, ensemble features</td><td>Temporary advantage to whoever updated last</td></tr>
+                  <tr><td>Paraphrased AI</td><td>Detector-aware rewrites</td><td>Bypass-specific training sets, subclass labels</td><td>Shifts constantly</td></tr>
+                  <tr><td>Process evidence</td><td>Cannot easily fake authentic revision traces at scale</td><td>Authorship, replay, metadata, LMS context</td><td>Detectors/platforms with process data</td></tr>
+                  <tr><td>Watermarking / provenance</td><td>Removal or rewriting attacks</td><td>Embedded signals, provenance chains</td><td>Potential long-run edge to generation platforms</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="part-4" data-search="synthesis research paper thesis impossibility esl bias students educators forecast">
+          <div class="section-heading">
+            <h2>Part IV: Synthesis, Practical Guidance, and Forecast</h2>
+            <p>This is the “paper” layer of the report: the argument, the caution, and the forward-looking interpretation.</p>
+          </div>
+
+          <div class="paper-card">
+            <h3>Research-Paper Thesis</h3>
+            <p><span class="badge cited">[CITED]</span> AI detectors produce probabilistic estimates of distributional similarity, not proof of authorship. That distinction is not semantic hair-splitting. It is the difference between “this text shares patterns with machine-generated text under our current model” and “a machine wrote this.” The former is a defensible statistical statement. The latter is a social accusation that text alone often cannot justify.</p>
+            <p>The impossibility argument is practical as much as theoretical. Human writing and AI writing increasingly overlap; AI outputs can be heavily edited; human writing can be formulaic; detectors are trained on evolving models; and adversarial rewrites continuously move the boundary. Perfect text-only authorship inference would require a class separation that the real world does not consistently provide.</p>
+          </div>
+
+          <div class="synthesis-grid">
+            <div class="paper-card">
+              <h3>The ESL Bias Problem</h3>
+              <p><span class="badge independent">[INDEPENDENT]</span> Liang et al. found an average 61.3% false-positive rate on human TOEFL essays in a seven-detector study, compared with high accuracy on US eighth-grade essays. This is one of the most important findings in the literature because it shows that detector error is not random noise. It can be structured by language proficiency and writing style.</p>
+            </div>
+            <div class="paper-card">
+              <h3>Mixed Authorship Is Now Normal</h3>
+              <p>The dominant real-world class is no longer “pure human” vs “pure AI.” It is collaborative text: brainstormed with AI, drafted by AI, rewritten by human, edited by grammar tools, cited by assistance tools, and maybe humanized to avoid false flags. Products that still pretend the world is binary are already behind reality.</p>
+            </div>
+            <div class="paper-card">
+              <h3>Why Humanizers Exist</h3>
+              <p>They exist partly because detectors overclaim. If a detector’s score is treated as a verdict, users will seek tools that perturb the score. Some of that use is deceptive. Some of it is defensive, especially when users fear false accusations. The market grew in the space between technical uncertainty and institutional overconfidence.</p>
+            </div>
+          </div>
+
+          <div class="paper-card">
+            <h3>Practical Guide</h3>
+            <div class="guides-grid">
+              <div class="card">
+                <h3>For Students</h3>
+                <p>A score is not guilt. If you are flagged, preserve drafts, revision history, notes, prompts, and timestamps. Process evidence is often stronger than arguing over a single detector’s number.</p>
+              </div>
+              <div class="card">
+                <h3>For Educators</h3>
+                <p>Use detector output as one signal among many. Ask for drafts, oral explanation, source notes, or Authorship-style evidence. Do not convert a probability into a disciplinary certainty.</p>
+              </div>
+              <div class="card">
+                <h3>For Content Teams</h3>
+                <p>Decide what you are actually policing: undisclosed AI use, poor quality, factual risk, or plagiarism. Different tools optimize for different governance problems.</p>
+              </div>
+              <div class="card">
+                <h3>For Technical Evaluators</h3>
+                <p>Benchmark on your own text classes. Long-form academic prose, marketing copy, translated text, and collaborative documents behave differently. Vendor benchmark claims are not deployment truth.</p>
+              </div>
+              <div class="card">
+                <h3>For Policy Makers</h3>
+                <p>Support provenance and disclosure systems, but avoid policies that treat current detectors as forensic certainty. The technology is still too probabilistic and too biased for that.</p>
+              </div>
+              <div class="card">
+                <h3>Decision Rule</h3>
+                <p>If the consequence is serious, text-only detection should never be the only evidence. The higher the stakes, the more process evidence you need.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="paper-card">
+            <h3>Forecast</h3>
+            <ul>
+              <li>Watermarking and provenance will matter more, but only if major generation platforms adopt them consistently and users do not rewrite away the signals.</li>
+              <li>Detector vendors will increasingly train on paraphrased and humanized AI rather than raw ChatGPT-style output.</li>
+              <li>Authorship and replay systems will become more valuable because they shift evidence from style to process.</li>
+              <li>The market will keep converging: writing assistants will add transparency, detectors will add rewrite suggestions, and humanizers will add built-in scanning.</li>
+              <li>The arms race has no stable endpoint because each side changes the statistical landscape the other side learns from.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section" id="part-5" data-search="references glossary acronym appendix methodology version history bibliography">
+          <div class="section-heading">
+            <h2>Part V: References, Glossary, and Appendix</h2>
+            <p>The bibliography below privileges official product docs and primary technical or academic sources. Glossary entries are written to be skimmable and searchable.</p>
+          </div>
+
+          <details class="reference-card" open>
+            <summary>
+              <div>
+                <h3>Bibliography</h3>
+                <div class="product-meta">APA-style-ish bibliography with live links, optimized for direct use inside the HTML report.</div>
+              </div>
+              <span class="badge cited">References</span>
+            </summary>
+            <div class="content">
+              <ol>
+                <li>Copyleaks. (2026). <a href="https://copyleaks.com/">AI content &amp; text authenticity detection</a>.</li>
+                <li>Copyleaks. (2026). <a href="https://copyleaks.com/ai-logic">AI Logic: Where AI transparency comes into focus</a>.</li>
+                <li>Copyleaks. (2026). <a href="https://copyleaks.com/get-started">Integrations</a>.</li>
+                <li>Copyleaks. (2026). <a href="https://docs.copyleaks.com/reference/actions/ai-image-detector/check/">AI image detection documentation</a>.</li>
+                <li>Copyleaks. (2026). <a href="https://copyleaks.com/pricing/">Pricing</a>.</li>
+                <li>Grammarly. (2026). <a href="https://www.grammarly.com/plans">Prices and plans</a>.</li>
+                <li>Grammarly. (2026). <a href="https://www.grammarly.com/ai-detector">AI Detector</a>.</li>
+                <li>Grammarly. (2026). <a href="https://www.grammarly.com/ai-humanizer">AI Humanizer</a>.</li>
+                <li>Grammarly. (2026). <a href="https://www.grammarly.com/browser">Grammarly for your browser</a>.</li>
+                <li>Grammarly. (2026). <a href="https://www.grammarly.com/mobile">Grammarly for mobile</a>.</li>
+                <li>Grammarly. (2026). <a href="https://www.grammarly.com/tone">Tone detector and suggestions</a>.</li>
+                <li>Grammarly Support. (2026). <a href="https://support.grammarly.com/hc/en-us/articles/28936304999949-AI-Detector-user-guide">AI Detector user guide</a>.</li>
+                <li>Grammarly Support. (2026). <a href="https://support.grammarly.com/hc/en-us/articles/29548735595405-Introducing-Grammarly-Authorship">About Authorship</a>.</li>
+                <li>Grammarly Support. (2026). <a href="https://support.grammarly.com/hc/en-us/articles/38552281546765-Docs-Grammarly-s-new-AI-writing-surface-user-guide">Docs user guide</a>.</li>
+                <li>HIX Bypass. (2026). <a href="https://bypass.hix.ai/">Homepage</a>.</li>
+                <li>HIX Bypass. (2026). <a href="https://bypass.hix.ai/humanize-ai">Humanize AI</a>.</li>
+                <li>HIX Bypass. (2026). <a href="https://bypass.hix.ai/ad/ai-humanizer">AI Humanizer ad page</a>.</li>
+                <li>HIX Bypass. (2026). <a href="https://bypass.hix.ai/ad/ai-detector">AI detector page</a>.</li>
+                <li>Humanize AI. (2026). <a href="https://www.humanizeai.pro/">Homepage</a>.</li>
+                <li>Humanize AI Docs. (2025). <a href="https://docs.humanizeai.pro/">API docs beta</a>.</li>
+                <li>Kar, et al. (2024). Publicized through vendor references on <a href="https://undetectable.ai/">Undetectable AI</a>.</li>
+                <li>Kirchenbauer, J., Geiping, J., Wen, Y., Katz, J., Miers, I., &amp; Goldstein, T. (2023). <a href="https://arxiv.org/abs/2301.10226">A watermark for large language models</a>.</li>
+                <li>Liang, W., Yuksekgonul, M., Mao, Y., Wu, E., &amp; Zou, J. (2023). <a href="https://doi.org/10.1016/j.patter.2023.100779">GPT detectors are biased against non-native English writers</a>.</li>
+                <li>Mitchell, E., Lee, Y., Khazatsky, A., Manning, C. D., &amp; Finn, C. (2023). <a href="https://arxiv.org/abs/2301.11305">DetectGPT: Zero-shot machine-generated text detection using probability curvature</a>.</li>
+                <li>Originality.ai. (2026). <a href="https://originality.ai/pricing">Pricing</a>.</li>
+                <li>Originality.ai. (2026). <a href="https://help.originality.ai/en/article/how-many-words-does-a-credit-scan-1uwp6dq/">How many words does a credit scan?</a></li>
+                <li>Originality.ai. (2026). <a href="https://originality.ai/blog/academic-model">What is Originality.ai’s Academic model for students and teachers?</a></li>
+                <li>Originality.ai. (2025). <a href="https://originality.ai/blog/ai-content-detection-accuracy">We have 99% accuracy in detecting AI</a>.</li>
+                <li>Originality.ai. (2025). <a href="https://originality.ai/blog/ai-detectors-think-everything-is-ai">AI detectors think everything I’m writing is AI</a>.</li>
+                <li>Pratama, A. R. (2025). <a href="https://peerj.com/articles/cs-2953/">The accuracy-bias trade-offs in AI text detection tools and their impact on fairness in scholarly publication</a>.</li>
+                <li>QuillBot. (2026). <a href="https://quillbot.com/ai-humanizer">AI Humanizer</a>.</li>
+                <li>QuillBot Help Center. (2025). <a href="https://help.quillbot.com/hc/en-us/articles/35854318883351-What-are-modes-in-the-QuillBot-Paraphraser-and-how-do-I-use-them">Paraphraser modes</a>.</li>
+                <li>QuillBot Help Center. (2025). <a href="https://help.quillbot.com/hc/en-us/articles/35854455010583-What-is-the-Synonym-Slider-in-QuillBot">Synonym Slider</a>.</li>
+                <li>QuillBot Help Center. (2025). <a href="https://help.quillbot.com/hc/en-us/articles/35855113357847-What-is-Freeze-Words-in-QuillBot">Freeze Words</a>.</li>
+                <li>QuillBot Help Center. (2025). <a href="https://help.quillbot.com/hc/en-us/articles/35855140458391-What-is-Compare-Modes-in-QuillBot">Compare Modes</a>.</li>
+                <li>QuillBot Help Center. (2025). <a href="https://help.quillbot.com/hc/en-us/articles/35855001909143-Where-are-the-Paraphraser-settings-located">Paraphraser settings</a>.</li>
+                <li>Sapling. (2026). <a href="https://nyc.sapling.ai/ai-content-detector">AI Detector</a>.</li>
+                <li>Sennrich, R., Haddow, B., &amp; Birch, A. (2016). <a href="https://www.research.ed.ac.uk/en/publications/neural-machine-translation-of-rare-words-with-subword-units">Neural machine translation of rare words with subword units</a>.</li>
+                <li>StealthGPT. (2026). <a href="https://www.stealthgpt.ai/">Homepage</a>.</li>
+                <li>StealthGPT. (2026). <a href="https://www.stealthgpt.ai/feature/ai-humanizer">AI Humanizer</a>.</li>
+                <li>StealthGPT. (2026). <a href="https://www.stealthgpt.ai/ai-checker">AI Checker</a>.</li>
+                <li>StealthGPT API. (2026). <a href="https://docs.stealthgpt.ai/api-reference/pricing">Pricing</a>.</li>
+                <li>Turnitin. (2025). <a href="https://helpcenter.turnitin.com/hc/en-us/articles/31880737970701-How-can-I-access-the-AI-Writing-Detection-feature">How can I access the AI Writing Detection feature?</a></li>
+                <li>Turnitin Guides. (2026). <a href="https://guides.turnitin.com/hc/en-us/articles/22774058814093-Using-the-AI-Writing-Report">Using the AI Writing Report</a>.</li>
+                <li>Turnitin Guides. (2026). <a href="https://guides.turnitin.com/hc/en-us/articles/27139000787853-How-should-I-review-the-AI-Writing-report">How should I review the AI Writing report?</a></li>
+                <li>Turnitin Guides. (2025). <a href="https://guides.turnitin.com/hc/en-us/articles/28234943089933-File-requirements-for-an-AI-writing-report">File requirements for an AI writing report</a>.</li>
+                <li>Turnitin Guides. (2026). <a href="https://guides.turnitin.com/hc/en-us/articles/28294949544717-AI-writing-detection-model">AI writing detection model release notes</a>.</li>
+                <li>Undetectable AI. (2026). <a href="https://undetectable.ai/">Homepage</a>.</li>
+                <li>Undetectable AI. (2026). <a href="https://undetectable.ai/ai-humanizer">AI Humanizer</a>.</li>
+                <li>Undetectable AI. (2026). <a href="https://undetectable.ai/pricing-a">Pricing</a>.</li>
+                <li>Undetectable AI Blog. (2025). <a href="https://undetectable.ai/blog/what-is-undetectable-ai/">What is Undetectable AI and how does it work?</a></li>
+                <li>Winston AI Help Center. (2025). <a href="https://help.gowinston.ai/getting-started/what-does-winston-ai-do-exactly">What does Winston AI do exactly?</a></li>
+                <li>Winston AI Help Center. (2025). <a href="https://help.gowinston.ai/getting-started/how-to-use-winston-ai-for-text-analysis">How to use Winston AI for text analysis</a>.</li>
+                <li>Winston AI Help Center. (2026). <a href="https://help.gowinston.ai/understanding-winston-ai/what-types-of-content-can-i-scan-with-winston-ai">What types of content can I scan with Winston AI?</a></li>
+                <li>Winston AI Help Center. (2025). <a href="https://help.gowinston.ai/understanding-ai-detection/are-ai-detection-tools-accurate">Are AI detection tools accurate?</a></li>
+                <li>Winston AI Help Center. (2025). <a href="https://help.gowinston.ai/privacy-matters/are-my-documents-private">Are my documents private?</a></li>
+                <li>ZeroGPT. (2026). <a href="https://zerogpt.org/ai-detector">AI Detector</a>.</li>
+                <li>GPTZero Support. (2025). <a href="https://support.gptzero.me/articles/1087723304-what-is-gptzero">What is GPTZero?</a>.</li>
+                <li>GPTZero Support. (2025). <a href="https://support.gptzero.me/articles/7549392421-how-do-i-interpret-results-from-gptzero-s-advanced-sentence-scanning">Advanced sentence scanning</a>.</li>
+                <li>GPTZero Support. (2025). <a href="https://support.gptzero.me/articles/7719430400-how-do-i-interpret-gptzero-s-new-ui-since-january-17-2024-with-confidence-scores-and-mixed-results">New UI and mixed results</a>.</li>
+              </ol>
+            </div>
+          </details>
+
+          <div class="appendix-grid">
+            <div class="paper-card">
+              <h3>Glossary</h3>
+              <div class="glossary-list">
+                <div class="glossary-item" data-search="token glossary"><strong>Token</strong><span>A unit in a model’s vocabulary. It may be a whole word, part of a word, punctuation, or a byte-level fragment.</span></div>
+                <div class="glossary-item" data-search="perplexity glossary"><strong>Perplexity</strong><span>A measure of how surprised a model is by a text sequence. Lower means the text is easier for the model to predict.</span></div>
+                <div class="glossary-item" data-search="burstiness glossary"><strong>Burstiness</strong><span>A rough public shorthand for variation in sentence length, complexity, and rhythm across a passage.</span></div>
+                <div class="glossary-item" data-search="stylometry glossary"><strong>Stylometry</strong><span>Quantitative analysis of writing style using lexical, syntactic, and discourse-level features.</span></div>
+                <div class="glossary-item" data-search="watermarking glossary"><strong>Watermarking</strong><span>Embedding a detectable signal during text generation so later systems can test for that signal.</span></div>
+                <div class="glossary-item" data-search="mixed authorship glossary"><strong>Mixed Authorship</strong><span>Text created through a combination of human writing and AI assistance rather than one pure origin.</span></div>
+                <div class="glossary-item" data-search="classifier glossary"><strong>Classifier</strong><span>A model that assigns text to categories such as likely human, likely AI, or mixed.</span></div>
+                <div class="glossary-item" data-search="top p nucleus glossary"><strong>Top-p / Nucleus Sampling</strong><span>A generation method that samples from the smallest token set whose cumulative probability exceeds a chosen threshold.</span></div>
+              </div>
+            </div>
+
+            <div class="paper-card">
+              <h3>Appendix</h3>
+              <ul>
+                <li><strong>Acronyms:</strong> BPE = Byte Pair Encoding; OCR = Optical Character Recognition; LMS = Learning Management System; LLM = Large Language Model; API = Application Programming Interface.</li>
+                <li><strong>Methodology note:</strong> Product features were documented from public pages, public help centers, and public pricing or docs surfaces available without private logins on April 13, 2026.</li>
+                <li><strong>Version note:</strong> Product claims, plan details, and supported features are temporally unstable. This file captures a dated snapshot, not timeless truth.</li>
+                <li><strong>Boundary note:</strong> Where paid, institutional, or private flows were not directly accessible, they are labeled from public documentation rather than claimed as firsthand account-level verification.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+  <script>
+    const body = document.body;
+    const searchInput = document.getElementById('search');
+    const searchables = [...document.querySelectorAll('[data-search]'), ...document.querySelectorAll('.glossary-item')];
+    const modeButtons = [...document.querySelectorAll('[data-mode]')];
+    const themeToggle = document.getElementById('themeToggle');
+    const backToTop = document.getElementById('backToTop');
+    const tocLinks = [...document.querySelectorAll('.toc a')];
+    const readingTime = document.getElementById('readingTime');
+
+    function updateReadingTime() {
+      const words = document.body.innerText.trim().split(/\s+/).length;
+      const mins = Math.max(1, Math.round(words / 210));
+      readingTime.textContent = `Estimated reading time: ${mins} min`;
+    }
+
+    updateReadingTime();
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      searchables.forEach((node) => {
+        const haystack = (node.dataset.search || node.innerText).toLowerCase();
+        const match = !query || haystack.includes(query);
+        node.classList.toggle('search-hidden', !match);
+      });
+    });
+
+    modeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        modeButtons.forEach((btn) => btn.classList.remove('is-active'));
+        button.classList.add('is-active');
+        body.classList.remove('mode-professor', 'mode-coder', 'mode-plain', 'mode-inference');
+        const mode = button.dataset.mode;
+        if (mode !== 'all') {
+          body.classList.add(`mode-${mode}`);
+        }
+      });
+    });
+
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light');
+    });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        tocLinks.forEach((link) => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+        });
+      });
+    }, { rootMargin: '-25% 0px -60% 0px', threshold: 0.1 });
+
+    document.querySelectorAll('section[id], details[id]').forEach((el) => observer.observe(el));
+
+    document.querySelectorAll('th').forEach((th) => {
+      th.addEventListener('click', () => {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = [...tbody.querySelectorAll('tr')];
+        const index = [...th.parentNode.children].indexOf(th);
+        const ascending = !th.classList.contains('sort-asc');
+        table.querySelectorAll('th').forEach((node) => node.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add(ascending ? 'sort-asc' : 'sort-desc');
+        rows.sort((a, b) => {
+          const av = a.children[index].innerText.trim().toLowerCase();
+          const bv = b.children[index].innerText.trim().toLowerCase();
+          return ascending ? av.localeCompare(bv, undefined, { numeric: true }) : bv.localeCompare(av, undefined, { numeric: true });
+        });
+        rows.forEach((row) => tbody.appendChild(row));
+      });
+    });
+  </script>
+</body>
+</html>

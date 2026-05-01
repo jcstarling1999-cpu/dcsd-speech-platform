@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../dist"
+		},
+		{
+			"path": "../../docs"
+		},
+		{
+			"path": "../../node_modules"
+		},
+		{
+			"path": "../../packages"
+		},
+		{
+			"path": "../../tests"
+		}
+	]
+}

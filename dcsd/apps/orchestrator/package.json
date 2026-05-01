@@ -1,0 +1,21 @@
+{
+  "name": "@platform/orchestrator",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "test": "tsx --test ../../tests/unit/orchestrator.test.ts"
+  },
+  "dependencies": {
+    "@platform/adapters": "*",
+    "@platform/database": "*",
+    "@platform/observability": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

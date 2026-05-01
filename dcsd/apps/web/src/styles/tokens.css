@@ -1,0 +1,39 @@
+:root {
+  --bg-midnight: #071721;
+  --bg-harbor: #0f3644;
+  --bg-mist: #e7edf0;
+
+  --ink-high: #f3fbff;
+  --ink-muted: #c7dce2;
+  --ink-low: #99b9c3;
+
+  --accent-coral: #ff7e5e;
+  --accent-amber: #f5b25c;
+  --accent-lagoon: #74d4be;
+
+  --blur-xs: 8px;
+  --blur-sm: 14px;
+  --blur-md: 20px;
+  --blur-lg: 30px;
+
+  --tint-xs: rgb(244 254 255 / 0.1);
+  --tint-sm: rgb(244 254 255 / 0.16);
+  --tint-md: rgb(244 254 255 / 0.22);
+  --tint-lg: rgb(244 254 255 / 0.32);
+
+  --border-luminance: rgb(255 255 255 / 0.42);
+  --edge-highlight: rgb(255 255 255 / 0.54);
+
+  --shadow-low: 0 8px 20px rgb(1 9 14 / 0.2);
+  --shadow-mid: 0 16px 40px rgb(1 9 14 / 0.3);
+  --shadow-high: 0 24px 70px rgb(1 9 14 / 0.45);
+
+  --radius-xl: 28px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  --space-1: 0.5rem;
+  --space-2: 0.85rem;
+  --space-3: 1.2rem;
+  --space-4: 1.8rem;
+}

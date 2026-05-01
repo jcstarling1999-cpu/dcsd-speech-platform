@@ -1,0 +1,2582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projector Council: Marketplace Showdown</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    :root {
+      --bg-0: #000000;
+      --bg-1: #0b0120;
+      --bg-2: #12042b;
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-surface: rgba(255, 255, 255, 0.04);
+      --neon-blue: #00d4aa;
+      --neon-coral: #ff6b6b;
+      --neon-purple: #9b5de5;
+      --neon-gold: #ffd93d;
+      --neon-cyan: #00f2ff;
+      --neon-magenta: #ff3ea5;
+      --text-0: #f5f7ff;
+      --text-1: #c7ccda;
+      --text-2: #8b93a7;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(circle at top, rgba(0, 212, 170, 0.08), transparent 50%),
+                  radial-gradient(circle at 20% 20%, rgba(155, 93, 229, 0.12), transparent 45%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2) 100%);
+      color: var(--text-0);
+      font-family: "Roboto", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.6), transparent 40%),
+        radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.5), transparent 40%),
+        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.4), transparent 40%),
+        radial-gradient(2px 2px at 70% 70%, rgba(255,255,255,0.3), transparent 40%);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      height: 100vh;
+      width: 100vw;
+      z-index: 1;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(15, 15, 25, 0.5);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      font-family: "Orbitron", "Roboto", sans-serif;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .brand .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      box-shadow: 0 0 12px rgba(0, 242, 255, 0.8);
+    }
+
+    .topbar-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid var(--glass-border);
+      background: rgba(20, 20, 35, 0.55);
+      color: var(--text-0);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 18px rgba(0, 242, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.25), rgba(155, 93, 229, 0.35));
+      border-color: rgba(0, 212, 170, 0.6);
+    }
+
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      background: rgba(20, 20, 35, 0.5);
+      border-radius: 999px;
+      border: 1px solid var(--glass-border);
+      font-size: 12px;
+      color: var(--text-1);
+    }
+
+    .progress-bar {
+      width: 120px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar span {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      transition: width 0.4s ease;
+    }
+
+    .swiper {
+      height: 100vh;
+    }
+
+    .swiper-slide {
+      padding: 110px 5vw 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: stretch;
+      justify-content: center;
+      position: relative;
+    }
+
+    .slide-title {
+      align-items: center;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-family: "Orbitron", "Roboto", sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(0, 242, 255, 0.25);
+      position: relative;
+    }
+
+    .hero-title.glitch::before,
+    .hero-title.glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      opacity: 0.7;
+    }
+
+    .hero-title.glitch::before {
+      color: var(--neon-magenta);
+      transform: translate(2px, -2px);
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    }
+
+    .hero-title.glitch::after {
+      color: var(--neon-cyan);
+      transform: translate(-2px, 2px);
+      clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    }
+
+    .hero-subtitle {
+      color: var(--text-1);
+      max-width: 700px;
+      font-size: clamp(1rem, 2vw, 1.3rem);
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .grid.cards {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .glass {
+      background: rgba(15, 15, 30, 0.55);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.06), transparent 40%);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .glass-hover:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .card-title {
+      font-family: "Orbitron", "Roboto", sans-serif;
+      letter-spacing: 0.04em;
+      font-size: 14px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      color: var(--text-1);
+    }
+
+    .projector-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 170px;
+    }
+
+    .projector-badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(0, 212, 170, 0.2);
+      align-self: flex-start;
+    }
+
+    .flip-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .flip-card {
+      perspective: 1000px;
+    }
+
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 130px;
+      transform-style: preserve-3d;
+      transition: transform 0.8s ease;
+    }
+
+    .flip-card:hover .flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-front,
+    .flip-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(20, 20, 35, 0.6);
+      border: 1px solid var(--glass-border);
+    }
+
+    .flip-back {
+      transform: rotateY(180deg);
+      background: rgba(20, 20, 35, 0.8);
+      color: var(--text-1);
+    }
+
+    .avatar-row {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .avatar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.18), rgba(0,0,0,0.7));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+    }
+
+    .chat-bubble {
+      background: rgba(10, 10, 20, 0.7);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--text-1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chat-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 20px;
+      width: 12px;
+      height: 12px;
+      background: rgba(10, 10, 20, 0.7);
+      border-left: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: rotate(45deg);
+    }
+
+    .typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid rgba(255,255,255,0.3);
+      width: 0;
+      animation: typing 3s steps(40, end) forwards, blink 1s step-end infinite;
+    }
+
+    @keyframes typing {
+      to { width: 100%; }
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+
+    .section-title {
+      font-family: "Orbitron", "Roboto", sans-serif;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .section-subtitle {
+      color: var(--text-2);
+      font-size: 14px;
+    }
+
+    .layout-two {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      align-items: stretch;
+    }
+
+    .radar-wrap {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .chart-card {
+      padding: 18px;
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+
+    .selector {
+      display: grid;
+      gap: 12px;
+    }
+
+    .selector input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(10, 10, 20, 0.7);
+      color: var(--text-0);
+    }
+
+    .selector-list {
+      max-height: 180px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .selector-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-1);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .selector-item:hover {
+      border-color: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0, 212, 170, 0.12);
+      border: 1px solid rgba(0, 212, 170, 0.35);
+      font-size: 12px;
+    }
+
+    .chip button {
+      background: transparent;
+      border: none;
+      color: var(--text-1);
+      cursor: pointer;
+    }
+
+    .filter-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .filter {
+      display: grid;
+      gap: 6px;
+    }
+
+    .filter label {
+      font-size: 12px;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .filter input[type="range"] {
+      width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(10, 10, 20, 0.7);
+      color: var(--text-0);
+      resize: vertical;
+      font-size: 12px;
+    }
+
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .toggle {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(10, 10, 20, 0.6);
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-1);
+    }
+
+    .toggle.active {
+      border-color: rgba(0, 242, 255, 0.5);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(0, 242, 255, 0.3);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 380px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: rgba(12, 12, 24, 0.9);
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    tbody td {
+      padding: 10px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-1);
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .winner {
+      color: #9dff9d;
+      font-weight: 600;
+    }
+
+    .expand-row {
+      display: none;
+      background: rgba(10, 10, 20, 0.6);
+    }
+
+    .expand-row td {
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    .heatmap {
+      display: grid;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .heatmap-cell {
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      color: var(--text-1);
+    }
+
+    .heatmap-cell.yes {
+      background: rgba(0, 212, 170, 0.2);
+      color: #d6ffe7;
+      border: 1px solid rgba(0, 212, 170, 0.4);
+    }
+
+    .heatmap-cell.no {
+      background: rgba(255, 107, 107, 0.15);
+      color: #ffd0d0;
+      border: 1px solid rgba(255, 107, 107, 0.4);
+    }
+
+    .carousel {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(240px, 1fr);
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-1);
+    }
+
+    .pros-cons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .pros {
+      border-left: 3px solid #00ff9d;
+    }
+
+    .cons {
+      border-left: 3px solid #ff6b6b;
+    }
+
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .rank-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .rank-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rank-bar .bar {
+      flex: 1;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .rank-bar .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      width: 0;
+      transition: width 0.6s ease;
+    }
+
+    .matrix {
+      display: grid;
+      gap: 10px;
+    }
+
+    .matrix-item {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 13px;
+      color: var(--text-1);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .cta {
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0, 242, 255, 0.08);
+      color: var(--text-0);
+      text-decoration: none;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all 0.3s ease;
+    }
+
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-card {
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow: auto;
+      padding: 24px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-0);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(10, 10, 20, 0.9);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--text-1);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 20;
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    .placeholder-img {
+      width: 100%;
+      height: 140px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(0,242,255,0.15), rgba(255,62,165,0.15));
+      display: grid;
+      place-items: center;
+      font-family: "Orbitron", sans-serif;
+      color: var(--text-1);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+    }
+
+    .in-view {
+      animation: fadeUp 0.8s ease forwards;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .swiper-slide {
+        padding: 100px 6vw 60px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar-controls {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .progress {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .topbar, .swiper-button-next, .swiper-button-prev, .swiper-pagination {
+        display: none !important;
+      }
+
+      .glass {
+        box-shadow: none;
+        border-color: #cccccc;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        Projector Council
+      </div>
+      <div class="topbar-controls">
+        <div class="progress">
+          <span id="slideLabel">Slide 1/12</span>
+          <div class="progress-bar"><span id="progressFill"></span></div>
+        </div>
+        <button class="btn" id="toggleAutoplay">Auto</button>
+        <button class="btn" id="toggleFullscreen">Full</button>
+      </div>
+    </div>
+
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        <!-- Slide 1: Title -->
+        <section class="swiper-slide slide-title">
+          <div class="hero-title glitch" data-text="Projector Council">Projector Council</div>
+          <div class="hero-title" style="font-size: clamp(1.8rem, 4vw, 3rem);">Marketplace Showdown</div>
+          <p class="hero-subtitle">Seattle finds. Neon glass. A council of five experts debating the best projector for your space.</p>
+          <div class="flip-grid">
+            <!-- Cards injected by JS -->
+          </div>
+        </section>
+
+        <!-- Slide 2: Council Intro -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Meet the Council</div>
+            <div class="section-subtitle">Five voices. One verdict. Click avatars to replay their debates.</div>
+          </div>
+          <div class="avatar-row">
+            <div class="glass avatar glass-hover">
+              <div class="avatar-circle">🧠</div>
+              <strong>Tech Guru</strong>
+              <div class="chat-bubble">"Specs first. I want clean ports, HDR, and accurate lumens."</div>
+            </div>
+            <div class="glass avatar glass-hover">
+              <div class="avatar-circle">🎮</div>
+              <strong>Gamer Pro</strong>
+              <div class="chat-bubble">"Low lag or no deal. I want 120Hz paths and fast input."</div>
+            </div>
+            <div class="glass avatar glass-hover">
+              <div class="avatar-circle">🎬</div>
+              <strong>Movie Buff</strong>
+              <div class="chat-bubble">"Color, contrast, and cinematic glow. Make it feel like a theater."</div>
+            </div>
+            <div class="glass avatar glass-hover">
+              <div class="avatar-circle">🎒</div>
+              <strong>Budget Hunter</strong>
+              <div class="chat-bubble">"Best bang per dollar. Do not overspend for marketing."</div>
+            </div>
+            <div class="glass avatar glass-hover">
+              <div class="avatar-circle">📐</div>
+              <strong>Spatial Architect</strong>
+              <div class="chat-bubble">"Placement, throw, and space harmony. Install it right."</div>
+            </div>
+          </div>
+          <div class="glass chat-bubble" style="max-width: 520px; margin: 0 auto;">
+            <div class="typewriter">"Let's debate these 8 beasts."</div>
+          </div>
+        </section>
+
+        <!-- Slide 3: Master Radar -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Executive Summary Radar</div>
+            <div class="section-subtitle">Scores are computed from provided specs. Unknown values are left blank.</div>
+          </div>
+          <div class="layout-two">
+            <div class="glass chart-card">
+              <canvas id="masterRadar"></canvas>
+            </div>
+            <div class="glass">
+              <div class="card-title">Projector Selector</div>
+              <div class="selector">
+                <input id="projectorSearch" type="text" placeholder="Search projectors" />
+                <div class="selector-list" id="projectorList"></div>
+                <div class="chip-row" id="selectedChips"></div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button class="btn primary" id="compareBtn">Compare</button>
+                  <button class="btn" id="clearBtn">Clear</button>
+                  <button class="btn" id="copyLinkBtn">Copy Link</button>
+                </div>
+                <div class="section-subtitle" id="selectionHint">Select 2 to 4 projectors.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 4: Performance Deep Dive -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Performance Deep Dive</div>
+            <div class="section-subtitle">Filters update all charts in real time.</div>
+          </div>
+          <div class="layout-two">
+            <div class="glass">
+              <div class="card-title">Filters</div>
+              <div class="filter-row">
+                <div class="filter">
+                  <label>Brightness Min (ANSI Lumens)</label>
+                  <input id="brightnessFilter" type="range" min="0" max="5000" value="0" />
+                  <div class="section-subtitle" id="brightnessValue">0+</div>
+                </div>
+                <div class="filter">
+                  <label>Price Max (USD)</label>
+                  <input id="priceFilter" type="range" min="0" max="5000" value="5000" />
+                  <div class="section-subtitle" id="priceValue">Up to 5000</div>
+                </div>
+                <div class="filter">
+                  <label>Resolution</label>
+                  <div class="toggle-row" id="resolutionToggles"></div>
+                </div>
+                <div class="filter">
+                  <label>Use Case</label>
+                  <div class="toggle-row" id="useCaseToggles"></div>
+                </div>
+              </div>
+            </div>
+            <div class="glass chart-card">
+              <canvas id="bubbleChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 5: Spec Table -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Spec Table</div>
+            <div class="section-subtitle">Click headers to sort. Click rows to expand details.</div>
+          </div>
+          <div class="glass">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+              <button class="btn" id="exportPdf">Export to PDF</button>
+              <button class="btn" id="exportRadar">Export Radar PNG</button>
+            </div>
+            <div class="table-wrap">
+              <table id="specTable"></table>
+            </div>
+          </div>
+          <div class="glass" style="margin-top:16px;">
+            <div class="section-title" style="font-size:1.1rem;">Marketplace Mega List</div>
+            <div class="section-subtitle">Sorted low to high by price. Includes every listing you provided (projectors + accessories).</div>
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;">
+              <label class="section-subtitle" style="display:flex; gap:8px; align-items:center;">
+                <input type="checkbox" id="projectorOnlyToggle" />
+                Show projectors only
+              </label>
+            </div>
+            <div class="filter">
+              <label class="section-subtitle" style="display:block; margin-bottom:6px;">Bulk import raw dump</label>
+              <textarea id="bulkImport" placeholder="Paste a raw dump (eBay, Marketplace, etc.) and click Import."></textarea>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                <button class="btn" id="importBtn">Import</button>
+                <button class="btn" id="clearImportBtn">Clear Imported</button>
+                <span class="section-subtitle" id="importStatus">No imported items.</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table id="listingsTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 6: Chat Debates 1 -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Council Debate: Gaming and Speed</div>
+            <div class="section-subtitle">Short and punchy arguments.</div>
+          </div>
+          <div class="grid cards">
+            <div class="glass chat-bubble">Tech Guru: "Epson LS11000 crushes 120Hz paths with HDMI 2.1."</div>
+            <div class="glass chat-bubble">Gamer Pro: "BenQ X500i 4ms lag smokes consoles."</div>
+            <div class="glass chat-bubble">Spatial Architect: "Short throw wins tight rooms. Less cable chaos."</div>
+          </div>
+        </section>
+
+        <!-- Slide 7: Chat Debates 2 -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Council Debate: Movies and Value</div>
+            <div class="section-subtitle">Color, contrast, and cost.</div>
+          </div>
+          <div class="grid cards">
+            <div class="glass chat-bubble">Movie Buff: "LG HU810PW colors pop. Dual laser helps HDR."</div>
+            <div class="glass chat-bubble">Budget Hunter: "Aurzen Boom 3 at 160 is a steal."</div>
+            <div class="glass chat-bubble">Tech Guru: "Optoma UHD35 is bright, but needs a dark room for contrast."</div>
+          </div>
+        </section>
+
+        <!-- Slide 8: Pair Battles -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Pair Battles</div>
+            <div class="section-subtitle">Four quick radars. Pick your champion.</div>
+          </div>
+          <div class="radar-wrap">
+            <div class="glass chart-card"><canvas id="pairRadar1"></canvas></div>
+            <div class="glass chart-card"><canvas id="pairRadar2"></canvas></div>
+            <div class="glass chart-card"><canvas id="pairRadar3"></canvas></div>
+            <div class="glass chart-card"><canvas id="pairRadar4"></canvas></div>
+          </div>
+          <div class="glass">BenQ edges Epson on lag, but Epson stays brighter and smoother at 4K.</div>
+        </section>
+
+        <!-- Slide 9: Missing Features Heatmap -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Missing Features Heatmap</div>
+            <div class="section-subtitle">Green glow means yes. Red means no or unknown.</div>
+          </div>
+          <div class="glass heatmap" id="heatmap"></div>
+          <div class="glass">No AirPlay means cable headaches for iPhone casting.</div>
+        </section>
+
+        <!-- Slide 10: Individual Deep Dives -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Individual Deep Dives</div>
+            <div class="section-subtitle">Tap a card to open full specs and notes.</div>
+          </div>
+          <div class="carousel" id="deepDive"></div>
+        </section>
+
+        <!-- Slide 11: Rankings -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Rankings</div>
+            <div class="section-subtitle">Weighted for 4K, refresh, input lag, ports, and value.</div>
+          </div>
+          <div class="glass rank-list" id="rankings"></div>
+        </section>
+
+        <!-- Slide 12: Final Verdict -->
+        <section class="swiper-slide">
+          <div>
+            <div class="section-title">Final Verdict</div>
+            <div class="section-subtitle">The council votes are based on your filters.</div>
+          </div>
+          <div class="layout-two">
+            <div class="glass chart-card">
+              <canvas id="voteChart"></canvas>
+            </div>
+            <div class="glass">
+              <div class="card-title">Top Picks</div>
+              <div id="finalPicks"></div>
+              <div class="cta-row" style="margin-top: 16px;">
+                <a class="cta" href="#" id="ctaMarketplace">Search Marketplace</a>
+                <a class="cta" href="#" id="ctaReport">Export Comparison</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="glass modal-card" id="modalCard">
+      <button class="close-btn" id="closeModal">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    const PROJECTORS = [
+      {
+        id: "freestyle2",
+        name: "Samsung The Freestyle 2nd Gen",
+        resolution: "1080p (1920x1080 native)",
+        brightness: 230,
+        lightSource: "LED, 30,000 hours",
+        contrast: "Not specified (decent for portable)",
+        refresh: "60Hz",
+        inputLag: "Moderate (not gaming-focused)",
+        throw: "Short, 2.6-8.8ft for 30-100in screen, 1.2:1 ratio",
+        audio: "Built-in 360 sound, eARC HDMI, Bluetooth 5.0",
+        ports: "HDMI eARC, USB-C, AirPlay 2, WiFi, auto-keystone",
+        speakers: "5W stereo",
+        weight: "1.8 lbs (super portable)",
+        smart: "Tizen OS, Gaming Hub, iPhone casting",
+        pros: "Portable tilt cradle, easy setup anywhere, AirPlay native, budget-friendly used ~ 350",
+        score: 8.2,
+        type: "Portable"
+      },
+      {
+        id: "aurzenboom3",
+        name: "Aurzen Boom 3",
+        resolution: "1080p native",
+        brightness: 500,
+        lightSource: "LED",
+        contrast: "Good for price",
+        refresh: "60Hz",
+        inputLag: "Average",
+        throw: "Standard, 50-100% zoom",
+        audio: "Bluetooth 5.2, aux",
+        ports: "HDMI, USB, auto obstacle avoidance",
+        speakers: "36W (2x full-range + 2 diaphragms)",
+        weight: "7.8 lbs",
+        smart: "Built-in apps, Netflix/YouTube",
+        pros: "Loud speakers, cheap ~160",
+        score: 7.5,
+        type: "Portable"
+      },
+      {
+        id: "lghu810pw",
+        name: "LG CineBeam HU810PW",
+        resolution: "4K UHD pixel-shift (3840x2160)",
+        brightness: 2700,
+        lightSource: "Dual laser, <20,000 hours",
+        contrast: "2M:1 dynamic",
+        refresh: "60Hz",
+        inputLag: "Around 30ms",
+        throw: "Standard, 1.6x zoom, lens shift",
+        audio: "Optical TOSLINK, HDMI 2.1 eARC, Bluetooth",
+        ports: "3x HDMI (1x 2.1 eARC), USB, Ethernet, AirPlay 2",
+        speakers: "Built-in",
+        weight: "Around 25 lbs",
+        smart: "webOS, HomeKit",
+        pros: "Bright colors, true 4K feel, great ports for soundbars, ~1200",
+        score: 8.8,
+        type: "Home Theater"
+      },
+      {
+        id: "vava4k",
+        name: "VAVA 4K UST",
+        resolution: "4K DLP",
+        brightness: "Not spec'd high (decent UST)",
+        lightSource: "Lamp?",
+        contrast: "3000:1",
+        refresh: "60Hz",
+        inputLag: "100ms 4K/60, 98ms 1080p/60",
+        throw: "Ultra short throw",
+        audio: "30W x2",
+        ports: "HDMI ARC, optical",
+        speakers: "60W total",
+        weight: "23.8 lbs",
+        smart: "Basic",
+        pros: "UST for small spaces, good audio, optical out",
+        cons: "Higher lag, noisier 32dB",
+        priceUsedSeattle: "Varies 1100+",
+        score: 8.5,
+        type: "UST"
+      },
+      {
+        id: "benqx500i",
+        name: "BenQ X500i",
+        resolution: "4K",
+        brightness: 2200,
+        lightSource: "4LED",
+        contrast: "600k:1 dynamic",
+        refresh: "Up to 240Hz 1080p",
+        inputLag: "16.7ms 4K/60, 8.3ms 1080p/120, 4.2ms 1080p/240",
+        throw: "Short throw",
+        audio: "Good ports",
+        ports: "HDMI 2.0b",
+        speakers: "Built-in",
+        weight: "Light for gaming",
+        smart: "Basic Android",
+        pros: "Gamer king low lag, bright, short throw",
+        cons: "No AirPlay, pricier ~1700 newish",
+        score: 9.0,
+        type: "Short Throw"
+      },
+      {
+        id: "optomauhd35",
+        name: "Optoma UHD35",
+        resolution: "4K",
+        brightness: 3600,
+        lightSource: "Lamp",
+        contrast: "High",
+        refresh: "240Hz 1080p",
+        inputLag: "16.7ms 4K/60, 4.2ms 1080p/240",
+        throw: "Standard",
+        audio: "10W, optical out, mini jack",
+        ports: "HDMI 2.0, RS232, USB, VGA",
+        speakers: "10W mono",
+        weight: "Standard",
+        smart: "No",
+        pros: "Super bright, low lag gaming, optical audio",
+        cons: "Lamp life shorter, no smart OS",
+        priceUsedSeattle: "3000+",
+        score: 9.2,
+        type: "Home Theater"
+      },
+      {
+        id: "xgimihorizon",
+        name: "XGIMI Horizon Pro",
+        resolution: "4K",
+        brightness: null,
+        lightSource: "Not provided",
+        contrast: "Not provided",
+        refresh: "Not provided",
+        inputLag: "Not provided",
+        throw: "Not provided",
+        audio: "Not provided",
+        ports: "Not provided",
+        speakers: "Not provided",
+        weight: "Not provided",
+        smart: "Not provided",
+        pros: "Specs not provided in dataset",
+        score: null,
+        type: "Portable"
+      },
+      {
+        id: "epsonls11000",
+        name: "Epson Home Cinema LS11000",
+        resolution: "4K",
+        brightness: null,
+        lightSource: "Not provided",
+        contrast: "Not provided",
+        refresh: "Not provided",
+        inputLag: "Not provided",
+        throw: "Not provided",
+        audio: "Not provided",
+        ports: "Not provided",
+        speakers: "Not provided",
+        weight: "Not provided",
+        smart: "Not provided",
+        pros: "Specs not provided in dataset",
+        score: null,
+        type: "Home Theater"
+      }
+    ];
+
+    const LISTINGS_RAW = `
+# Original links from your list
+[$50Projector screenSeattle, WA](https://www.facebook.com/marketplace/item/1061047292645296/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$70$100￼ ￼￼ Db Power Native 1080P Wi-Fi Projector Upgrade 9500L Full Sd Outdoor Movie Projector Support 4D￼Redmond, WA](https://www.facebook.com/marketplace/item/1593424728057868/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$35$45100W USB C CHARGERSeattle, WA](https://www.facebook.com/marketplace/item/1450829489710223/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$200Sega Homestar Flux Night Light Star ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/1608743820298493/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$20USB C Adapter HDMI MultiportSeattle, WA](https://www.facebook.com/marketplace/item/893086230324886/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$350Samsung Freestyle Gen 2 Portable ProjectorShips to you](https://www.facebook.com/marketplace/item/863971856612425/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$25Anker Soundsync A3352 Bluetooth Audio AdapterSeattle, WA](https://www.facebook.com/marketplace/item/2039991330177955/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$253 in 1 Charging Station for Apple Devices, Foldable Wireless Charging Station for iPhoneBellevue, WA](https://www.facebook.com/marketplace/item/1243791407682659/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$25$40video projectorRenton, WA](https://www.facebook.com/marketplace/item/919098557288148/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[Partner listing$30Platinum Led Reference Series Pearl 3g Projector](https://www.facebook.com/marketplace/item/25844220321898371/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$350Optoma 4000-Lumen Full Hd Laser Dlp Projector HZ39HDRShips to you](https://www.facebook.com/marketplace/item/2236147683544179/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$5Apple Lightning to 3.5mm adapterSeattle, WA](https://www.facebook.com/marketplace/item/879945694846259/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$35$40Apple USB C PD Power Adapter 20VSeattle, WA](https://www.facebook.com/marketplace/item/826841673701380/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$30$451080p hd wifi projecterSeattle, WA](https://www.facebook.com/marketplace/item/1587831442641959/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$35$50Dell docking station with free hdmi cbaleSeattle, WA](https://www.facebook.com/marketplace/item/774160265733212/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$30DataTraveler 70 256GB USB-CSeattle, WA](https://www.facebook.com/marketplace/item/1910953336473294/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$15Anker PowerPort Atom III charger/adapterRedmond, WA](https://www.facebook.com/marketplace/item/834966529576510/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$8Apple Certified Lightning to 3.5mm Headphone Jack AdapterBellevue, WA](https://www.facebook.com/marketplace/item/1254314419887419/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$30NISOO ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/2372099286569037/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$158BitDo USB Wireless Adapter 2Seattle, WA](https://www.facebook.com/marketplace/item/1499394337786823/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$45$50Home Projector great for wall projectionBellevue, WA](https://www.facebook.com/marketplace/item/1257306976293479/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$60Brand new Apple USB-C 140W Power AdapterSeattle, WA](https://www.facebook.com/marketplace/item/1694879978161224/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$50New Stand Alone Projector ScreenSeattle, WA](https://www.facebook.com/marketplace/item/1725103561499265/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$500BenQ MW560 Digital Projector – Like New (Opened Only to Inspect)Ships to you](https://www.facebook.com/marketplace/item/2373557356423515/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$40$50apple 96w usb-c power adapterBellevue, WA](https://www.facebook.com/marketplace/item/1462593462205276/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$40Anker USB Charging Hub – 5-PortSeattle, WA](https://www.facebook.com/marketplace/item/1298323585666598/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$500Arcam FMJ AV888 Home Cinema Processor , untested , no remoteSeattle, WA](https://www.facebook.com/marketplace/item/833422462865354/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$25Apeman LC350 Mini ProjectorBellevue, WA](https://www.facebook.com/marketplace/item/2980096798828534/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$500$550High End Projector Epson 3LCD Projector Powerlite 119WShips to you](https://www.facebook.com/marketplace/item/2657079354641808/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$50$100Apple Thunderbolt Display 27”Seattle, WA](https://www.facebook.com/marketplace/item/1205573791232710/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$20Projector screen 120’Renton, WA](https://www.facebook.com/marketplace/item/1274907304657279/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$8StarTech.com Mini DisplayPort To HDMI Adapter - 1080p - Mini DP To HDMISeattle, WA](https://www.facebook.com/marketplace/item/25698657706410538/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$15$25iPhone 15 pro leather case / Spigen screen protectorsSeattle, WA](https://www.facebook.com/marketplace/item/1882497175693939/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$40Mini projectorSeattle, WA](https://www.facebook.com/marketplace/item/1925755491705453/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$10Monitor holder HuanuoSeattle, WA](https://www.facebook.com/marketplace/item/1942148959986996/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[Partner listing$51.99Al™ Series Lamp & Housing For The Hitachi Hcp-u25e Projector - 90 Day Warranty](https://www.facebook.com/marketplace/item/25682805354719118/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$75New Govee galaxy star light projector ProShips to you](https://www.facebook.com/marketplace/item/4189078351307990/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$50HP ep7120 Digital ProjectorBellevue, WA](https://www.facebook.com/marketplace/item/4160254384304842/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$100New! 1080P 5G WiFi Projector, 9600 LUX Mini Projector, 4K Supported Movie ProjectorBellevue, WA](https://www.facebook.com/marketplace/item/1680222602951836/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$400$750Optoma ProjectorShips to you](https://www.facebook.com/marketplace/item/929691016047434/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$60Vankyo Leisure 470 Mini Projector – New / Never UsedSeattle, WA](https://www.facebook.com/marketplace/item/879972588344691/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$40Dell 1510X ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/3945016575720714/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$40AuKing Mini ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/1926016461676459/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$50Viewsonic ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/1942955303225793/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$20Apple Watch Magnetic Fast Charger to USB-C CableSeattle, WA](https://www.facebook.com/marketplace/item/25545195521831019/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$160Aurzen Boom 3 Smart Projector Netflix 4k supportedShips to you](https://www.facebook.com/marketplace/item/759290599903073/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[Partner listing$49.99Mini Smart Projector Portable Hy300 Pro 4k 1080p With Dual-band Wi-fi, Bluetooth](https://www.facebook.com/marketplace/item/25621124340905979/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$40$50LED Mini ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/1697203287612638/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A4ae34a5a-2b8e-4149-b371-0cab01a790e2&__tn__= !%3AD)
+[$1,200$1,500LG CineBeam 4K Ultra Short Throw ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/833475816407728/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$750$800Epson projector 5030ubRedmond, WA](https://www.facebook.com/marketplace/item/1767810570394297/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$400$450Insta 360 Ace pro 2Lynnwood, WA](https://www.facebook.com/marketplace/item/1193136916294913/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[Just listed$20Designer Projector / EnlargerSeattle, WA](https://www.facebook.com/marketplace/item/1270125658423702/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$10Apple HDMI TV to Lightning AdapterBremerton, WA](https://www.facebook.com/marketplace/item/1660335061810417/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$20LED projectorBothell, WA](https://www.facebook.com/marketplace/item/2220631755374679/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$100$125Epson power lite home cinema 705HD projector with caseChimacum, WA](https://www.facebook.com/marketplace/item/1233496892013073/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$700$900Projector screen 100”Mukilteo, WA](https://www.facebook.com/marketplace/item/2694358274249670/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$115Unopened Anker Power Bank 25,000mAhSeattle, WA](https://www.facebook.com/marketplace/item/1198437875759641/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[Just listed$100Sony tv + Sony Soundbar + Sony SpeakerSeattle, WA](https://www.facebook.com/marketplace/item/2021911578374599/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$20This is an ESDDI LED Shooting Tent Kit (light box).Fife, WA](https://www.facebook.com/marketplace/item/2223357608067723/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$50$60Auking Projector + 120in Fabric ScreenBothell, WA](https://www.facebook.com/marketplace/item/1602652147749888/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$130$180Morimoto 4TL-R Bi-Xenon ProjectorsLynnwood, WA](https://www.facebook.com/marketplace/item/2234256960367376/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$100Brooks Home Projector + 3 Pairs of 3D Glasses – BRAND NEW! 🔥Lynnwood, WA](https://www.facebook.com/marketplace/item/855156000589246/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$253 in 1 Charging Station for Apple Devices, Foldable Wireless Charging Station for iPhoneBellevue, WA](https://www.facebook.com/marketplace/item/1243791407682659/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$75$85Epson Projector EX3200Milton, WA](https://www.facebook.com/marketplace/item/1576873943529562/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[Partner listing$19.80Mobile Phone Magnifier Screen 3d Hd Projector Portable Foldable Phones All](https://www.facebook.com/marketplace/item/25652961774365388/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$30010.1" Daylight Viewable Director MonitorBothell, WA](https://www.facebook.com/marketplace/item/848616594846073/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$35$45100W USB C CHARGERSeattle, WA](https://www.facebook.com/marketplace/item/1450829489710223/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$35$40SCREENMAX.LCD PROJECTOR NEW.Auburn, WA](https://www.facebook.com/marketplace/item/25268450482808954/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$76Portable projector proTacoma, WA](https://www.facebook.com/marketplace/item/3119023048304325/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$120New! 4K WiFi Bluetooth Projector with Native 1080P, Portable Movie Projector with HiFi Speaker,7500LBellevue, WA](https://www.facebook.com/marketplace/item/1912175343007094/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$100$120BNIB Macbook USB power adapter, cable and multi port adapterSeattle, WA](https://www.facebook.com/marketplace/item/860930293484944/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$20$25Cheap Boxlight projectorKirkland, WA](https://www.facebook.com/marketplace/item/910393561429328/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$35Draper 99" Luma Projection ScreenSeattle, WA](https://www.facebook.com/marketplace/item/1632051181479494/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$50Christie DS+25 ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/1384768953351071/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$600$800Da Lite Projecter screenKirkland, WA](https://www.facebook.com/marketplace/item/25130802759932963/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$25Home projectorTacoma, WA](https://www.facebook.com/marketplace/item/1388367559218359/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$65$80Facebook Portal TVBothell, WA](https://www.facebook.com/marketplace/item/1156724199998997/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[Partner listing$89.25$95.97Clokowe Mini Projector With Wifi And Bluetooth, Built-in Apps, Smart Portable Pr](https://www.facebook.com/marketplace/item/26091349747165160/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$40ProjectorPuyallup, WA](https://www.facebook.com/marketplace/item/1361853429315253/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$200$320E24t G5 Hp FHD Touch MonitorRenton, WA](https://www.facebook.com/marketplace/item/844067277963215/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$110Epson EMP-822H Projector – 757 Lamp Hours – Bag & Cables IncludedSeattle, WA](https://www.facebook.com/marketplace/item/1211580123699696/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$20Apple Lightning to HDMI AdapterBrier, WA](https://www.facebook.com/marketplace/item/1298338822195198/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$90High Quality Projector For Home Theater - 470 leisureBellevue, WA](https://www.facebook.com/marketplace/item/1583526842915429/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$25Original apple usb-c power adapter - doesn’t come with the original cordShips to you](https://www.facebook.com/marketplace/item/1612737929742082/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$40$50Home projector ￼Bremerton, WA](https://www.facebook.com/marketplace/item/1603563424006033/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$50Govee light projectorLacey, WA](https://www.facebook.com/marketplace/item/25639162885717048/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$100ROCONIA 5G WiFi Bluetooth 4K Support Native 1080P, 15000LM Full HD Movie Projector, LCD Technology 3Auburn, WA](https://www.facebook.com/marketplace/item/1577819756776772/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$25$40video projectorRenton, WA](https://www.facebook.com/marketplace/item/919098557288148/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$2,000Apple Vision ProSeattle, WA](https://www.facebook.com/marketplace/item/1198443225605032/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$3,000APEX PRO GX1000 portable pico TV projectorLake Stevens, WA](https://www.facebook.com/marketplace/item/1601886507722136/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$650$850Projector Screen - remote motorized with Tab Tension, ISF certifiedRedmond, WA](https://www.facebook.com/marketplace/item/2032788140596253/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$160Used Apple Airpod Pro 2 w/ ESR Case and USB-C-to-USB-C Charging CableSeattle, WA](https://www.facebook.com/marketplace/item/4259559714318606/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$150Airpods Max Space GreyBellevue, WA](https://www.facebook.com/marketplace/item/4139839026329962/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$1,500Vava projectorBothell, WA](https://www.facebook.com/marketplace/item/2132493203911815/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$150Projector Media Set (OBO)Auburn, WA](https://www.facebook.com/marketplace/item/1746538715983052/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$2,000Hitachi LCD Projector (Model CP-WU8461)Seattle, WA](https://www.facebook.com/marketplace/item/1262920458704923/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$50Mobile projector Dell M110Issaquah, WA](https://www.facebook.com/marketplace/item/2052464265586285/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$35ultra slim iniu portable power bankSeattle, WA](https://www.facebook.com/marketplace/item/2952324798297922/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$40$50Apple VESA Mount adapterSammamish, WA](https://www.facebook.com/marketplace/item/2086996315469117/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$300Optoma ProjectorSeattle, WA](https://www.facebook.com/marketplace/item/1307671230920211/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$10$20Cheap office thingsKirkland, WA](https://www.facebook.com/marketplace/item/878734071522487/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$12$15New Apple USB-C charging cableSeattle, WA](https://www.facebook.com/marketplace/item/1565827621435485/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$19Apple 60W USB-C Charge Cable (1 m) & 20W USB-C Power AdapterIssaquah, WA](https://www.facebook.com/marketplace/item/858521427000967/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$40Belkin MagSafe power bankBothell, WA](https://www.facebook.com/marketplace/item/1371696457644582/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$3,000$10,500Full projector system with sound bar and projector screenSnohomish, WA](https://www.facebook.com/marketplace/item/1119539790239717/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$10$15Apple USB-C to USB AdapterKirkland, WA](https://www.facebook.com/marketplace/item/715299714988173/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$100VIVOHOME Motorized Projector Screen 84" w/ Remote (NEW IN BOX)Seattle, WA](https://www.facebook.com/marketplace/item/1616754763085000/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$80$125Home Theater - Universal Projector Ceiling Mount KitSeattle, WA](https://www.facebook.com/marketplace/item/1521554089142411/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$200Vankyo ProjectorBothell, WA](https://www.facebook.com/marketplace/item/1185784249894209/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+[$76Projector mini proTacoma, WA ](https://www.facebook.com/marketplace/item/1193727236077252/?ref=search&referral_code=null&referral_story_type=post&tracking=browse_serp%3A78079935-ac4c-42bb-bf36-3ab97ad0f482&__tn__= !%3AD)
+
+--- Additional listings (no links provided)
+$800 | Optoma UHD51A 4K UHD Smart Home Theater Projector, Works with Amazon Alexa & Google Assistant | Lynnwood, WA
+$1,699 | LG Cinebeam 4K UST Laser Projector Android Smart TV HU715QW | Snohomish, WA
+$500 $600 | Epson Home Cinema 2150 Projector | Everett, WA
+$1,200 $1,500 | LG CineBeam 4K Ultra Short Throw Projector | Seattle, WA
+$1,600 | Valerion Visionmaster Pro 2 Projector | Puyallup, WA
+$180 $200 | Optoma projector | Seattle, WA
+$140 | Optoma 3500 lumen projector | Lynnwood, WA
+$300 | Optoma Projector | Bremerton, WA
+$300 | Optoma Projector | Seattle, WA
+$1,650 | VAVA chroma 4K laser projector + 120 inch screen (brand new) | Redmond, WA
+$500 | Epson Laser Projector | Seattle, WA
+$4,200 | 120 inch ultra short throw 4K projection TV with JBL 9.1 speakers - full home theatre! | Renton, WA
+$130 $220 | Optoma 1080p Full HD DLP Projector + FREE White Projection Screen | Seattle, WA
+$250 | Nexigo PJ40 1080p Projector | Shoreline, WA
+$60 | Projector | Seattle, WA
+$320 $350 | Optoma HD26 1080p FHD Projector w/ stand | Kent, WA
+$400 $450 | XGIMI Halo+ 1080P Projector | Seattle, WA
+$260 $280 | 2200ANSI & Officially-Licensed AP Smart 4K Projector with WiFi and Bluetooth, VISSPL 3D Dolby Audio | Bremerton, WA
+$275 | XGIMI Elfin Flip Projector | Seatac, WA
+$50 | Optoma PK301 Projector | Normandy Park, WA
+$450 | Happrun 4k tv projector | Bremerton, WA
+$260 | Home Cinema Projector | Seattle, WA
+$500 | BRAND NEW - Samsung The Freestyle 2nd Gen Portable Smart Projector | Bellevue, WA
+$800 | Wolf Cinema Projector w/animorph lense * not working* | Medina, WA
+$200 $300 | 3D Optoma projector, 3D glasses, and motorized screen | Seattle, WA
+$1,800 | Epson LS650B 4k projector with Yamaha sound system | Renton, WA
+$150 | Epson Projector Home Cinema 2030 w/Bag/Remote | Kenmore, WA
+$500 $1,500 | JVC DLA-RS10 HOME THEATER PROJECTOR | Lakewood, WA
+$310 | Nebula Capsule 3 Pocket Projector | Bothell, WA
+$420 | LG PF610P Smart Home TheaterProjector | Seatac, WA
+$3,000 $4,000 | 4k Sony Projector VPL-XW5000ES | Marysville, WA
+$500 | E-vision laser projector 9000 4k-UHD COMMERCIAL GRADE | Lynnwood, WA
+$140 | UNOPENED Apple TV 4K -WiFi & Ethernet - 128 GB | Bellevue, WA
+$650 $750 | Epson home cinema 2150 | Seattle, WA
+$350 $400 | Epson Home Cinema 3500 Projector | Seattle, WA
+$55 | Smart Projector Support 4K 1080P with Dual-Band WIFI6 5G Wireless 5.1 Bluetooth,Keystone Correction | Monroe, WA
+$500 | Panasonic PTAE8000U full HD (1080p) home theater projector | Bremerton, WA
+$350 | NEBULA by Anker Solar Portable 1080p Projector | Seattle, WA
+$700 | Lg short throw projector | Seattle, WA
+$400 | Hitachi CP-AW252WN Ultra Short Throw LCD Projector | Lakebay, WA
+$25 | Unopened box Single monitor mount | Kirkland, WA
+$300 | 10.1" Daylight Viewable Director Monitor | Bothell, WA
+$60 | Home theater kit | Seattle, WA
+$300 | Projector, screen and sound bar. Projector used twice sound bar and screen are brand new. | Burlington, WA
+$690 | LG 28MQ750-C 28" QHD Monitor - Excellent Condition | USB-C 90W PD | Auburn, WA
+$15 | NEW: Anker Compact Foldable Usb-c Charger - 5000mAh - For Apple/Samsung/Google Phones | Bothell, WA
+$400 $750 | Optoma Projector | Ships to you
+$30 | Quntis RGB Pro+ Monitor Light Bar with Remote, 15 Modes Gaming Backlight, 4 Colors & Brightness | Auburn, WA
+$1,850 | Barco Xld Zoom Projector Lens – 1.80–2.40:1 (4k / Laser-optimized) | Partner listing
+$50 $60 | Projector | Edmonds, WA
+$50 $60 | Mini projector | Seattle, WA
+$120 | New! 4K WiFi Bluetooth Projector with Native 1080P, Portable Movie Projector with HiFi Speaker,7500L | Bellevue, WA
+$120 | LG Minibeam projector | Federal Way, WA
+$20 | projector | Bonney Lake, WA
+$25 $75 | BenQ Joybee GP1 Mini LED Projector | Bellevue, WA
+$100 $120 | Projector with WiFi 6 and Bluetooth 5.2, YABER Pro V9 Native 1080P Outdoor Movie Projector, Auto 6D | Puyallup, WA
+$30 | Projector | Bremerton, WA
+$100 | ROCONIA 5G WiFi Bluetooth 4K Support Native 1080P, 15000LM Full HD Movie Projector, LCD Technology 3 | Auburn, WA
+$160 $200 | Dell S2721QS 27″ 4K Monitor – Perfect for School & WFH | Federal Way, WA
+$50 | Apple Wireless Magic Keyboard | Lynnwood, WA
+$30 | New Projector | Port Orchard, WA
+$33.74 $37.49 | Projector Screen 100 Inch 4k Hd Foldable Portable Indoor Outdoor Double Sided | Partner listing
+$90 $100 | Alwtniet HY450 projector | Edmonds, WA
+$200 | Dangbei Projector | Auburn, WA
+$85 $200 | LG Ultragear 32” Monitor | Seattle, WA
+$359.10 $399 | Vava Va-lt002 4k Ultra Short Throw Laser Projector – For Parts - Doesnt Turn On | Partner listing
+$2,000 | Apple Vision Pro | Seattle, WA
+$450 | HD Theater Setup - BenQ Projector with Samsung Soundbar and Blu-ray | Seattle, WA
+$480 | Hitachi CP-A301N LCD XGA 3000 Lumens Ultra Short Throw (UST) Projector | Federal Way, WA
+$400 | Hitachi CP-AW252WN Ultra Short Throw LCD Projector | Lakebay, WA
+$1,000 $2,000 | 🎬 COMBO CINE EN CASA – PROYECTOR 8K + PANTALLA MOTORIZADA + BARRA DE SONIDO 🎥🔊 | Mountlake Terrace, WA
+$150 | Airpods Max Space Grey | Bellevue, WA
+$20 | Belkin thunderbolt 3 express dock HD | Seattle, WA
+$60 | Apple TV Model A1625 | Tukwila, WA
+$100 | AirPods Pro 3 (Left & Right pods only, no case) | Seattle, WA
+$80 | Aulumu M01 4-in-1 Folding Wireless Charging Station & Pad | MagSafe | Seattle, WA
+$849.99 $1,099.99 | Hisense 120l5f 4k Uhd 2700 Lumens 4k Ultra-short Throw Laser Projector | Partner listing
+$380 | View Sonic DLP projector 3D, PJD5232 | Bellevue, WA
+    `;
+
+    const COLORS = [
+      "rgba(0, 242, 255, 0.8)",
+      "rgba(255, 107, 107, 0.8)",
+      "rgba(155, 93, 229, 0.8)",
+      "rgba(255, 217, 61, 0.8)",
+      "rgba(0, 255, 157, 0.8)",
+      "rgba(255, 62, 165, 0.8)",
+      "rgba(124, 252, 0, 0.8)",
+      "rgba(0, 212, 170, 0.8)"
+    ];
+
+    const STATE = {
+      selected: [],
+      filters: {
+        brightnessMin: 0,
+        priceMax: 5000,
+        resolutions: new Set(),
+        useCase: new Set()
+      },
+      charts: {}
+    };
+
+    const FEATURES = [
+      "AirPlay",
+      "Optical Out",
+      "Bluetooth 5+",
+      "eARC/ARC",
+      "Short/UST",
+      "120Hz Path"
+    ];
+
+    const LISTINGS = parseListings(LISTINGS_RAW);
+    let IMPORTED_LISTINGS = [];
+
+    function parseNumber(value) {
+      if (value === null || value === undefined) return null;
+      if (typeof value === "number") return value;
+      const match = String(value).replace(/,/g, "").match(/(\d+\.?\d*)/g);
+      if (!match) return null;
+      return parseFloat(match[0]);
+    }
+
+    function parseMaxNumber(value) {
+      if (!value) return null;
+      const matches = String(value).replace(/,/g, "").match(/(\d+\.?\d*)/g);
+      if (!matches) return null;
+      return Math.max(...matches.map(n => parseFloat(n)));
+    }
+
+    function parseMinNumber(value) {
+      if (!value) return null;
+      const matches = String(value).replace(/,/g, "").match(/(\d+\.?\d*)/g);
+      if (!matches) return null;
+      return Math.min(...matches.map(n => parseFloat(n)));
+    }
+
+    function parseContrast(value) {
+      if (!value) return null;
+      const str = String(value).toLowerCase();
+      if (str.includes("m:1")) {
+        const num = parseNumber(str);
+        return num ? num * 1000000 : null;
+      }
+      if (str.includes("k:1")) {
+        const num = parseNumber(str);
+        return num ? num * 1000 : null;
+      }
+      if (str.includes(":1")) {
+        return parseNumber(str);
+      }
+      return null;
+    }
+
+    function parseHours(value) {
+      if (!value) return null;
+      const num = parseNumber(value);
+      return num ? num : null;
+    }
+
+    function parseListings(raw) {
+      const lines = raw.split("\n").map(line => line.trim()).filter(Boolean);
+      const listings = [];
+      let pendingName = "";
+      let pendingLocation = "";
+      let pendingLink = "";
+
+      const isNoise = (line) => {
+        const l = line.toLowerCase();
+        return (
+          l.startsWith("image ") ||
+          l.includes("opens in a new window") ||
+          l.includes("buy it now") ||
+          l.includes("free delivery") ||
+          l.includes("free returns") ||
+          l.includes("watchers") ||
+          l.includes("brand new") ||
+          l.includes("pre-owned") ||
+          l.includes("open box") ||
+          l.includes("parts only") ||
+          l.includes("certified") ||
+          l.includes("refurbished") ||
+          l.includes("new listing") ||
+          l.includes("new low price") ||
+          l.includes("great price") ||
+          l.includes("located in") ||
+          l.includes("items per page") ||
+          l.includes("results") ||
+          l.includes("shop on ebay") ||
+          l.includes("popular filters") ||
+          l.includes("filters applied") ||
+          l.includes("save this search") ||
+          l.includes("feedback") ||
+          l.includes("see all") ||
+          l.includes("sort:") ||
+          l.includes("condition") ||
+          l.includes("item location") ||
+          l.includes("shipping") ||
+          l.includes("returns") ||
+          l.includes("deal") ||
+          l.includes("arrives in") ||
+          l.includes("buying format") ||
+          l.includes("available inventory") ||
+          l.includes("native resolution") ||
+          l.includes("image brightness") ||
+          l.includes("maximum resolution") ||
+          l.includes("compatible operating system") ||
+          l.includes("aspect ratio") ||
+          l.includes("connectivity") ||
+          l.includes("color ") ||
+          l.includes("brand") ||
+          l.includes("auction") ||
+          l.includes("buy it now")
+        );
+      };
+
+      const extractLocation = (text) => {
+        const locMatch = text.match(/([A-Za-z .'-]+,\s*[A-Z]{2})/g);
+        if (locMatch) return locMatch[locMatch.length - 1];
+        const located = text.match(/located in\s+([A-Za-z .'-]+)/i);
+        if (located) return located[1].trim();
+        return "";
+      };
+
+      const pushListing = (name, priceMin, priceMax, location, link) => {
+        if (!name && priceMin === null) return;
+        listings.push({
+          id: `l${listings.length + 1}`,
+          name: name || "Unknown item",
+          priceMin,
+          priceMax,
+          location,
+          link
+        });
+      };
+
+      lines.forEach((line) => {
+        if (line.startsWith("#") || line.startsWith("//") || line.startsWith("---")) return;
+
+        let text = line.replace(/Opens in a new window or tab/gi, "").trim();
+        if (!text || /^Image\s+\d+\s+of\s+\d+/i.test(text)) return;
+
+        let link = null;
+        const mdMatch = text.match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
+        if (mdMatch) {
+          text = mdMatch[1];
+          link = mdMatch[2];
+        }
+
+        if (text.includes("|")) {
+          const parts = text.split("|").map(p => p.trim()).filter(Boolean);
+          const pricePart = parts[0] || "";
+          const namePart = parts[1] || "";
+          const locationPart = parts[2] || "";
+          const linkPart = parts[3] || "";
+          const prices = [...pricePart.matchAll(/\$(\d+(?:,\d{3})?(?:\.\d+)?)/g)]
+            .map(m => parseFloat(m[1].replace(/,/g, "")));
+          const priceMin = prices[0] ?? null;
+          const priceMax = prices[1] ?? prices[0] ?? null;
+          pushListing(namePart, priceMin, priceMax, locationPart, linkPart || link || "");
+          pendingName = "";
+          pendingLocation = "";
+          pendingLink = "";
+          return;
+        }
+
+        const prices = [...text.matchAll(/\$(\d+(?:,\d{3})?(?:\.\d+)?)/g)]
+          .map(m => parseFloat(m[1].replace(/,/g, "")));
+        if (prices.length) {
+          const priceMin = prices[0] ?? null;
+          const priceMax = prices[1] ?? prices[0] ?? null;
+          const nameCandidate = text.replace(/\$(\d+(?:,\d{3})?(?:\.\d+)?)/g, "").trim();
+          const name = pendingName || (isNoise(nameCandidate) ? "" : nameCandidate);
+          const location = pendingLocation || extractLocation(text);
+          pushListing(name, priceMin, priceMax, location, pendingLink || link || "");
+          pendingName = "";
+          pendingLocation = "";
+          pendingLink = "";
+          return;
+        }
+
+        if (text.toLowerCase().startsWith("located in")) {
+          pendingLocation = text.replace(/located in/i, "").trim();
+          return;
+        }
+
+        if (isNoise(text)) {
+          const loc = extractLocation(text);
+          if (loc) pendingLocation = loc;
+          return;
+        }
+
+        const loc = extractLocation(text);
+        if (loc) pendingLocation = loc;
+        pendingName = text;
+        if (link) pendingLink = link;
+      });
+
+      return listings;
+    }
+
+    function classifyListing(name) {
+      const n = name.toLowerCase();
+      if (n.includes("projector") && (n.includes("screen") || n.includes("sound") || n.includes("kit") || n.includes("bundle") || n.includes("home theater"))) {
+        return "Bundle";
+      }
+      if (n.includes("screen")) return "Screen";
+      if (n.includes("projector")) return "Projector";
+      if (n.includes("monitor") || n.includes("display") || n.includes("tv")) return "Monitor/TV";
+      if (n.includes("soundbar") || n.includes("speaker") || n.includes("audio") || n.includes("airpod") || n.includes("earbud") || n.includes("headphone")) return "Audio";
+      if (n.includes("lens")) return "Lens";
+      if (n.includes("adapter") || n.includes("charger") || n.includes("dock") || n.includes("cable") || n.includes("mount") || n.includes("power bank") || n.includes("keyboard") || n.includes("case") || n.includes("light bar")) return "Accessory";
+      if (n.includes("star") || n.includes("planetarium") || n.includes("night light")) return "Lighting/Other";
+      return "Other";
+    }
+
+    function formatPriceLabel(item) {
+      if (item.priceMin == null) return "-";
+      if (item.priceMax != null && item.priceMax !== item.priceMin) {
+        return `$${item.priceMin}–$${item.priceMax}`;
+      }
+      return `$${item.priceMin}`;
+    }
+
+    function getAllListings() {
+      return LISTINGS.concat(IMPORTED_LISTINGS);
+    }
+
+    function buildListingsTable(listingsOverride) {
+      const table = document.getElementById("listingsTable");
+      const projectorOnly = document.getElementById("projectorOnlyToggle")?.checked;
+      const listings = listingsOverride || getAllListings();
+      const sorted = [...listings].sort((a, b) => {
+        const aPrice = a.priceMin ?? Number.MAX_SAFE_INTEGER;
+        const bPrice = b.priceMin ?? Number.MAX_SAFE_INTEGER;
+        if (aPrice !== bPrice) return aPrice - bPrice;
+        return (a.name || "").localeCompare(b.name || "");
+      });
+      const filtered = projectorOnly ? sorted.filter(item => classifyListing(item.name) === "Projector" || classifyListing(item.name) === "Bundle") : sorted;
+
+      table.innerHTML = "";
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      ["Price", "Item", "Category", "Location", "Link"].forEach(label => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      filtered.forEach(item => {
+        const row = document.createElement("tr");
+        const linkCell = item.link
+          ? `<a href="${item.link}" target="_blank" rel="noopener">Open</a>`
+          : "<span class=\"section-subtitle\">Missing link</span>";
+        row.innerHTML = `
+          <td>${formatPriceLabel(item)}</td>
+          <td>${item.name}</td>
+          <td>${classifyListing(item.name)}</td>
+          <td>${item.location || "-"}</td>
+          <td>${linkCell}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      table.appendChild(tbody);
+    }
+
+    function parseWeight(value) {
+      if (!value) return null;
+      return parseNumber(value);
+    }
+
+    function parsePrice(proj) {
+      if (proj.priceUsedSeattle) return parseNumber(proj.priceUsedSeattle);
+      if (proj.pros) {
+        const match = proj.pros.match(/~\s?(\d+)/);
+        if (match) return parseNumber(match[1]);
+      }
+      return null;
+    }
+
+    function resolutionScore(resolution) {
+      if (!resolution) return null;
+      const lower = resolution.toLowerCase();
+      if (lower.includes("4k") || lower.includes("3840")) return 10;
+      if (lower.includes("1080")) return 5;
+      if (lower.includes("wuxga")) return 6;
+      return 4;
+    }
+
+    function normalize(value, max, inverse) {
+      if (value === null || value === undefined || isNaN(value)) return null;
+      let score = value / max;
+      if (inverse) score = 1 - score;
+      return Math.max(0, Math.min(1, score));
+    }
+
+    function computeSmartScore(proj) {
+      const smart = (proj.smart || "").toLowerCase();
+      let score = 0;
+      if (smart.includes("tizen")) score += 3;
+      if (smart.includes("webos")) score += 3;
+      if (smart.includes("android")) score += 2;
+      if (smart.includes("apps")) score += 2;
+      if (smart.includes("homekit")) score += 2;
+      return Math.min(10, Math.max(1, score));
+    }
+
+    function portCount(ports) {
+      if (!ports) return 0;
+      const lower = ports.toLowerCase();
+      let count = 0;
+      const keys = ["hdmi", "usb", "optical", "ethernet", "arc", "earc", "wifi", "bluetooth", "rs232", "vga"];
+      keys.forEach(key => {
+        if (lower.includes(key)) count += 1;
+      });
+      return count;
+    }
+
+    function projectorTypeColor(type) {
+      switch (type) {
+        case "Home Theater": return "#00D4AA";
+        case "Portable": return "#FF6B6B";
+        case "Short Throw": return "#22C55E";
+        case "UST": return "#9B5DE5";
+        default: return "#FFD93D";
+      }
+    }
+
+    function getUseCases(proj) {
+      const cases = [];
+      const brightness = parseNumber(proj.brightness);
+      const lag = parseMaxNumber(proj.inputLag);
+      const refresh = parseMaxNumber(proj.refresh);
+      if (proj.type === "Portable") cases.push("Outdoor");
+      if (brightness && brightness >= 2000) cases.push("Business");
+      if (refresh && refresh >= 120) cases.push("Gaming");
+      if (proj.resolution && proj.resolution.toLowerCase().includes("4k")) cases.push("Movies");
+      return cases.length ? cases : ["Movies"];
+    }
+
+    const METRICS = [
+      { key: "brightness", label: "Brightness", max: 4000, inverse: false },
+      { key: "resolutionScore", label: "Resolution", max: 10, inverse: false },
+      { key: "refresh", label: "Refresh", max: 240, inverse: false },
+      { key: "inputLag", label: "Input Lag", max: 60, inverse: true },
+      { key: "contrast", label: "Contrast", max: 2000000, inverse: false, log: true },
+      { key: "lampLife", label: "Lamp Life", max: 30000, inverse: false },
+      { key: "ports", label: "Ports", max: 10, inverse: false },
+      { key: "portability", label: "Portability", max: 10, inverse: false },
+      { key: "speakers", label: "Speakers", max: 60, inverse: false },
+      { key: "smartScore", label: "Smart", max: 10, inverse: false }
+    ];
+
+    function buildProjectorData(proj) {
+      const brightness = parseNumber(proj.brightness);
+      const refresh = parseMaxNumber(proj.refresh);
+      const inputLag = parseMinNumber(proj.inputLag);
+      const contrast = parseContrast(proj.contrast);
+      const lampLife = parseHours(proj.lightSource);
+      const ports = portCount(proj.ports);
+      const weight = parseWeight(proj.weight);
+      const speakers = parseNumber(proj.speakers);
+      const portability = weight ? Math.max(1, 10 - weight / 3) : null;
+      const smartScore = computeSmartScore(proj);
+      return {
+        brightness,
+        refresh,
+        inputLag,
+        contrast,
+        lampLife,
+        ports,
+        weight,
+        speakers,
+        portability,
+        smartScore,
+        resolutionScore: resolutionScore(proj.resolution)
+      };
+    }
+
+    function getFilteredProjectors() {
+      return PROJECTORS.filter(proj => {
+        const brightness = parseNumber(proj.brightness);
+        const price = parsePrice(proj);
+        if (brightness !== null && brightness < STATE.filters.brightnessMin) return false;
+        if (price !== null && price > STATE.filters.priceMax) return false;
+        if (STATE.filters.resolutions.size) {
+          const resLabel = proj.resolution ? proj.resolution.toLowerCase() : "unknown";
+          let matched = false;
+          STATE.filters.resolutions.forEach(res => {
+            if (resLabel.includes(res)) matched = true;
+          });
+          if (!matched) return false;
+        }
+        if (STATE.filters.useCase.size) {
+          const cases = getUseCases(proj);
+          let matched = false;
+          STATE.filters.useCase.forEach(use => {
+            if (cases.includes(use)) matched = true;
+          });
+          if (!matched) return false;
+        }
+        return true;
+      });
+    }
+
+    function getActiveProjectors() {
+      const filtered = getFilteredProjectors();
+      if (STATE.selected.length) {
+        return filtered.filter(p => STATE.selected.includes(p.id));
+      }
+      return filtered;
+    }
+
+    function updateURL() {
+      const params = new URLSearchParams();
+      if (STATE.selected.length) params.set("p", STATE.selected.join(","));
+      params.set("bmin", STATE.filters.brightnessMin);
+      params.set("pmax", STATE.filters.priceMax);
+      if (STATE.filters.resolutions.size) params.set("res", Array.from(STATE.filters.resolutions).join("|"));
+      if (STATE.filters.useCase.size) params.set("use", Array.from(STATE.filters.useCase).join("|"));
+      history.replaceState(null, "", `?${params.toString()}`);
+    }
+
+    function loadURLState() {
+      const params = new URLSearchParams(location.search);
+      const selected = params.get("p");
+      if (selected) STATE.selected = selected.split(",").filter(Boolean);
+      const bmin = parseInt(params.get("bmin"), 10);
+      const pmax = parseInt(params.get("pmax"), 10);
+      if (!isNaN(bmin)) STATE.filters.brightnessMin = bmin;
+      if (!isNaN(pmax)) STATE.filters.priceMax = pmax;
+      const res = params.get("res");
+      if (res) STATE.filters.resolutions = new Set(res.split("|").filter(Boolean));
+      const use = params.get("use");
+      if (use) STATE.filters.useCase = new Set(use.split("|").filter(Boolean));
+    }
+
+    function buildFlipCards() {
+      const container = document.querySelector(".flip-grid");
+      container.innerHTML = "";
+      PROJECTORS.forEach((proj, i) => {
+        const card = document.createElement("div");
+        card.className = "flip-card";
+        card.innerHTML = `
+          <div class="flip-inner">
+            <div class="flip-front">
+              <strong>${proj.name}</strong>
+              <span class="projector-badge">${proj.type}</span>
+            </div>
+            <div class="flip-back">
+              <div>${proj.resolution}</div>
+              <div>${proj.brightness ? proj.brightness + " ANSI lm" : "Brightness TBD"}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function buildSelector() {
+      const list = document.getElementById("projectorList");
+      list.innerHTML = "";
+      const search = document.getElementById("projectorSearch").value.toLowerCase();
+      PROJECTORS.filter(p => p.name.toLowerCase().includes(search)).forEach((proj) => {
+        const item = document.createElement("label");
+        item.className = "selector-item";
+        const checked = STATE.selected.includes(proj.id);
+        item.innerHTML = `
+          <span>${proj.name}</span>
+          <input type="checkbox" data-id="${proj.id}" ${checked ? "checked" : ""} />
+        `;
+        list.appendChild(item);
+      });
+      list.querySelectorAll("input[type=checkbox]").forEach(input => {
+        input.addEventListener("change", (e) => {
+          const id = e.target.dataset.id;
+          if (e.target.checked) {
+            if (STATE.selected.length >= 4) {
+              e.target.checked = false;
+              return;
+            }
+            STATE.selected.push(id);
+          } else {
+            STATE.selected = STATE.selected.filter(pid => pid !== id);
+          }
+          updateChips();
+          updateCharts();
+          updateURL();
+        });
+      });
+    }
+
+    function updateChips() {
+      const chipRow = document.getElementById("selectedChips");
+      chipRow.innerHTML = "";
+      STATE.selected.forEach(id => {
+        const proj = PROJECTORS.find(p => p.id === id);
+        if (!proj) return;
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.innerHTML = `${proj.name} <button data-id="${id}">×</button>`;
+        chipRow.appendChild(chip);
+      });
+      chipRow.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = e.target.dataset.id;
+          STATE.selected = STATE.selected.filter(pid => pid !== id);
+          updateSelectorAndAll();
+        });
+      });
+      const hint = document.getElementById("selectionHint");
+      hint.textContent = STATE.selected.length ? `Selected ${STATE.selected.length} / 4` : "Select 2 to 4 projectors.";
+    }
+
+    function updateSelectorAndAll() {
+      buildSelector();
+      updateChips();
+      updateCharts();
+      updateURL();
+    }
+
+    function buildToggles() {
+      const resContainer = document.getElementById("resolutionToggles");
+      ["1080", "4k", "wuxga"].forEach(res => {
+        const btn = document.createElement("button");
+        btn.className = "toggle" + (STATE.filters.resolutions.has(res) ? " active" : "");
+        btn.textContent = res.toUpperCase();
+        btn.addEventListener("click", () => {
+          if (STATE.filters.resolutions.has(res)) {
+            STATE.filters.resolutions.delete(res);
+          } else {
+            STATE.filters.resolutions.add(res);
+          }
+          buildToggles();
+          updateCharts();
+          updateURL();
+        });
+        resContainer.appendChild(btn);
+      });
+
+      const useContainer = document.getElementById("useCaseToggles");
+      ["Movies", "Gaming", "Business", "Outdoor"].forEach(use => {
+        const btn = document.createElement("button");
+        btn.className = "toggle" + (STATE.filters.useCase.has(use) ? " active" : "");
+        btn.textContent = use;
+        btn.addEventListener("click", () => {
+          if (STATE.filters.useCase.has(use)) {
+            STATE.filters.useCase.delete(use);
+          } else {
+            STATE.filters.useCase.add(use);
+          }
+          buildToggles();
+          updateCharts();
+          updateURL();
+        });
+        useContainer.appendChild(btn);
+      });
+    }
+
+    function radarDataset(projectors) {
+      const labels = METRICS.map(m => m.label);
+      const datasets = projectors.map((proj, idx) => {
+        const derived = buildProjectorData(proj);
+        const data = METRICS.map(metric => {
+          let value;
+          if (metric.key === "resolutionScore") value = derived.resolutionScore;
+          else value = derived[metric.key];
+          if (metric.log && value) {
+            return Math.log10(value) / Math.log10(metric.max);
+          }
+          return normalize(value, metric.max, metric.inverse);
+        });
+        return {
+          label: proj.name,
+          data,
+          borderColor: COLORS[idx % COLORS.length],
+          backgroundColor: COLORS[idx % COLORS.length].replace("0.8", "0.15"),
+          pointBackgroundColor: COLORS[idx % COLORS.length],
+          borderWidth: 2,
+          spanGaps: true
+        };
+      });
+      return { labels, datasets };
+    }
+
+    function buildRadarChart(ctx, projectors) {
+      return new Chart(ctx, {
+        type: "radar",
+        data: radarDataset(projectors),
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const proj = projectors[context.datasetIndex];
+                  return proj ? proj.name : "";
+                }
+              }
+            },
+            legend: { display: false }
+          },
+          scales: {
+            r: {
+              grid: { color: "rgba(255,255,255,0.08)" },
+              angleLines: { color: "rgba(255,255,255,0.1)" },
+              pointLabels: { color: "#c7ccda", font: { size: 10 } },
+              min: 0,
+              max: 1,
+              ticks: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function buildBubbleChart(ctx, projectors) {
+      const data = projectors
+        .map((proj, idx) => {
+          const price = parsePrice(proj);
+          const brightness = parseNumber(proj.brightness);
+          const contrast = parseContrast(proj.contrast);
+          if (!price || !brightness || !contrast) return null;
+          return {
+            x: price,
+            y: brightness,
+            r: Math.max(6, Math.min(20, Math.log10(contrast) * 3)),
+            label: proj.name,
+            backgroundColor: projectorTypeColor(proj.type),
+            borderColor: "rgba(255,255,255,0.2)",
+            projector: proj
+          };
+        })
+        .filter(Boolean);
+
+      return new Chart(ctx, {
+        type: "bubble",
+        data: {
+          datasets: [{
+            label: "Projectors",
+            data,
+            backgroundColor: data.map(d => d.backgroundColor),
+            borderColor: data.map(d => d.borderColor)
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const d = context.raw;
+                  return `${d.label} | $${d.x} | ${d.y} lm`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: "Price (USD)", color: "#c7ccda" }, grid: { color: "rgba(255,255,255,0.05)" } },
+            y: { title: { display: true, text: "Brightness (ANSI lm)", color: "#c7ccda" }, grid: { color: "rgba(255,255,255,0.05)" } }
+          },
+          onClick: (evt, elements) => {
+            if (!elements.length) return;
+            const index = elements[0].index;
+            const proj = data[index].projector;
+            openModal(proj);
+          }
+        }
+      });
+    }
+
+    function buildPairRadars() {
+      const pairs = [
+        ["aurzenboom3", "freestyle2"],
+        ["lghu810pw", "optomauhd35"],
+        ["benqx500i", "epsonls11000"],
+        ["xgimihorizon", "vava4k"]
+      ];
+      const canvases = ["pairRadar1", "pairRadar2", "pairRadar3", "pairRadar4"];
+      pairs.forEach((pair, idx) => {
+        const projs = pair.map(id => PROJECTORS.find(p => p.id === id)).filter(Boolean);
+        const ctx = document.getElementById(canvases[idx]).getContext("2d");
+        if (STATE.charts[canvases[idx]]) STATE.charts[canvases[idx]].destroy();
+        STATE.charts[canvases[idx]] = buildRadarChart(ctx, projs);
+      });
+    }
+
+    function buildSpecTable(projectors) {
+      const table = document.getElementById("specTable");
+      const headers = [
+        { key: "name", label: "Name" },
+        { key: "resolution", label: "Res" },
+        { key: "brightness", label: "Lumens" },
+        { key: "refresh", label: "Hz/Lag" },
+        { key: "audio", label: "Audio/Ports" },
+        { key: "weight", label: "Weight" },
+        { key: "pros", label: "Pros/Cons" },
+        { key: "price", label: "Used Price" }
+      ];
+
+      table.innerHTML = "";
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headers.forEach(header => {
+        const th = document.createElement("th");
+        th.textContent = header.label;
+        th.dataset.key = header.key;
+        th.addEventListener("click", () => sortTable(header.key));
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      projectors.forEach((proj, idx) => {
+        const price = parsePrice(proj);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${proj.name}</td>
+          <td>${proj.resolution || "-"}</td>
+          <td>${proj.brightness ?? "-"}</td>
+          <td>${proj.refresh || "-"} / ${proj.inputLag || "-"}</td>
+          <td>${proj.audio || "-"}<br/><span class="section-subtitle">${proj.ports || "-"}</span></td>
+          <td>${proj.weight || "-"}</td>
+          <td>${proj.pros || "-"}${proj.cons ? `<br/><span class="section-subtitle">${proj.cons}</span>` : ""}</td>
+          <td>${price ? "$" + price : (proj.priceUsedSeattle || "-")}</td>
+        `;
+        row.addEventListener("click", () => {
+          const next = row.nextSibling;
+          if (next && next.classList.contains("expand-row")) {
+            next.style.display = next.style.display === "table-row" ? "none" : "table-row";
+          }
+        });
+        tbody.appendChild(row);
+
+        const expand = document.createElement("tr");
+        expand.className = "expand-row";
+        expand.innerHTML = `
+          <td colspan="8">
+            Throw: ${proj.throw || "-"} | Light Source: ${proj.lightSource || "-"} | Smart: ${proj.smart || "-"}
+          </td>
+        `;
+        tbody.appendChild(expand);
+      });
+      table.appendChild(tbody);
+
+      highlightWinners(tbody);
+    }
+
+    function highlightWinners(tbody) {
+      const rows = Array.from(tbody.querySelectorAll("tr")).filter((_, idx) => idx % 2 === 0);
+      const maxBrightness = Math.max(...PROJECTORS.map(p => parseNumber(p.brightness) || 0));
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const brightness = parseNumber(cells[2].textContent);
+        if (brightness === maxBrightness) cells[2].classList.add("winner");
+      });
+    }
+
+    function sortTable(key) {
+      const projectors = getActiveProjectors();
+      const sorted = [...projectors].sort((a, b) => {
+        if (key === "price") return (parsePrice(a) || 0) - (parsePrice(b) || 0);
+        const valA = a[key] || "";
+        const valB = b[key] || "";
+        if (typeof valA === "number") return valA - valB;
+        return String(valA).localeCompare(String(valB));
+      });
+      buildSpecTable(sorted);
+    }
+
+    function buildHeatmap(projectors) {
+      const container = document.getElementById("heatmap");
+      container.innerHTML = "";
+      const grid = document.createElement("div");
+      grid.className = "heatmap-grid";
+      grid.style.gridTemplateColumns = `150px repeat(${FEATURES.length}, minmax(90px, 1fr))`;
+
+      grid.appendChild(buildCell("Projector"));
+      FEATURES.forEach(feature => grid.appendChild(buildCell(feature)));
+
+      projectors.forEach(proj => {
+        grid.appendChild(buildCell(proj.name));
+        FEATURES.forEach(feature => {
+          const yes = hasFeature(proj, feature);
+          const cell = buildCell(yes ? "Yes" : "No", yes ? "yes" : "no");
+          grid.appendChild(cell);
+        });
+      });
+
+      container.appendChild(grid);
+    }
+
+    function buildCell(text, cls) {
+      const cell = document.createElement("div");
+      cell.className = "heatmap-cell" + (cls ? ` ${cls}` : "");
+      cell.textContent = text;
+      return cell;
+    }
+
+    function hasFeature(proj, feature) {
+      const text = `${proj.ports || ""} ${proj.audio || ""} ${proj.smart || ""}`.toLowerCase();
+      switch (feature) {
+        case "AirPlay":
+          return text.includes("airplay");
+        case "Optical Out":
+          return text.includes("optical") || text.includes("toslink");
+        case "Bluetooth 5+":
+          return text.includes("5.1") || text.includes("5.2") || text.includes("5.0") || text.includes("5+");
+        case "eARC/ARC":
+          return text.includes("earc") || text.includes("arc");
+        case "Short/UST":
+          return (proj.throw || "").toLowerCase().includes("short") || (proj.throw || "").toLowerCase().includes("ultra");
+        case "120Hz Path":
+          return (proj.refresh || "").includes("120") || (proj.refresh || "").includes("240");
+        default:
+          return false;
+      }
+    }
+
+    function buildDeepDive(projectors) {
+      const container = document.getElementById("deepDive");
+      container.innerHTML = "";
+      projectors.forEach(proj => {
+        const card = document.createElement("div");
+        card.className = "glass glass-hover";
+        card.innerHTML = `
+          <div class="placeholder-img">${proj.name.split(" ")[0]}</div>
+          <strong>${proj.name}</strong>
+          <div class="stat-pill">${proj.resolution || "-"}</div>
+          <div class="stat-pill">${proj.brightness ? proj.brightness + " lm" : "Lumens TBD"}</div>
+          <div class="stat-pill">${proj.refresh || "Refresh TBD"}</div>
+          <div class="section-subtitle">${proj.pros || "Specs not provided"}</div>
+        `;
+        card.addEventListener("click", () => openModal(proj));
+        container.appendChild(card);
+      });
+    }
+
+    function buildRankings(projectors) {
+      const container = document.getElementById("rankings");
+      container.innerHTML = "";
+      const scored = projectors.map(proj => {
+        const d = buildProjectorData(proj);
+        const score = (d.brightness || 0) / 400 + (d.resolutionScore || 0) * 2 + (d.refresh || 0) / 60 - (d.inputLag || 0) / 10 + (d.ports || 0);
+        return { proj, score };
+      }).sort((a, b) => b.score - a.score);
+
+      const max = scored[0] ? scored[0].score : 1;
+      scored.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "rank-bar";
+        row.innerHTML = `
+          <div style="min-width: 120px; font-size: 13px;">${idx + 1}. ${item.proj.name}</div>
+          <div class="bar"><span style="width:${(item.score / max) * 100}%;"></span></div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function buildFinalPicks(projectors) {
+      const container = document.getElementById("finalPicks");
+      const bestOverall = projectors[0];
+      const bestValue = projectors.find(p => parsePrice(p)) || projectors[0];
+      const bestGaming = projectors.find(p => (p.refresh || "").includes("240")) || projectors[0];
+      const bestPortable = projectors.find(p => p.type === "Portable") || projectors[0];
+      container.innerHTML = `
+        <div class="score-badge">Best Overall: ${bestOverall ? bestOverall.name : "-"}</div>
+        <div class="score-badge">Best Value: ${bestValue ? bestValue.name : "-"}</div>
+        <div class="score-badge">Best Gaming: ${bestGaming ? bestGaming.name : "-"}</div>
+        <div class="score-badge">Best Portable: ${bestPortable ? bestPortable.name : "-"}</div>
+      `;
+    }
+
+    function openModal(proj) {
+      const modal = document.getElementById("modal");
+      const content = document.getElementById("modalContent");
+      content.innerHTML = `
+        <h2>${proj.name}</h2>
+        <div class="placeholder-img">${proj.name.split(" ")[0]}</div>
+        <p>${proj.pros || "No notes"}</p>
+        <div class="grid cards">
+          <div class="glass">Resolution: ${proj.resolution || "-"}</div>
+          <div class="glass">Brightness: ${proj.brightness || "-"}</div>
+          <div class="glass">Refresh: ${proj.refresh || "-"}</div>
+          <div class="glass">Input Lag: ${proj.inputLag || "-"}</div>
+          <div class="glass">Ports: ${proj.ports || "-"}</div>
+          <div class="glass">Audio: ${proj.audio || "-"}</div>
+        </div>
+        <div class="pros-cons" style="margin-top: 16px;">
+          <div class="glass pros">Has This: ${proj.pros || "-"}</div>
+          <div class="glass cons">Missing This: ${proj.cons || "Not listed"}</div>
+        </div>
+        <div style="margin-top: 16px;" class="section-subtitle">Affiliate links: Amazon | B&H (placeholders)</div>
+      `;
+      modal.classList.add("active");
+    }
+
+    function buildVoteChart(ctx, projectors) {
+      const data = projectors.map(p => p.score || 6);
+      return new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: projectors.map(p => p.name),
+          datasets: [{
+            data,
+            backgroundColor: COLORS
+          }]
+        },
+        options: {
+          plugins: { legend: { position: "bottom", labels: { color: "#c7ccda" } } }
+        }
+      });
+    }
+
+    function updateCharts() {
+      const active = getActiveProjectors();
+      if (STATE.charts.masterRadar) STATE.charts.masterRadar.destroy();
+      STATE.charts.masterRadar = buildRadarChart(document.getElementById("masterRadar").getContext("2d"), active);
+
+      if (STATE.charts.bubble) STATE.charts.bubble.destroy();
+      STATE.charts.bubble = buildBubbleChart(document.getElementById("bubbleChart").getContext("2d"), active);
+
+      buildSpecTable(active);
+      buildHeatmap(active);
+      buildDeepDive(active);
+      buildRankings(active);
+      buildFinalPicks(active);
+
+      if (STATE.charts.vote) STATE.charts.vote.destroy();
+      STATE.charts.vote = buildVoteChart(document.getElementById("voteChart").getContext("2d"), active);
+
+      buildPairRadars();
+    }
+
+    function init() {
+      loadURLState();
+      buildFlipCards();
+      buildSelector();
+      buildToggles();
+      updateChips();
+      updateCharts();
+      buildListingsTable();
+
+      const projectorToggle = document.getElementById("projectorOnlyToggle");
+      if (projectorToggle) {
+        projectorToggle.addEventListener("change", () => buildListingsTable());
+      }
+
+      const importBtn = document.getElementById("importBtn");
+      const clearImportBtn = document.getElementById("clearImportBtn");
+      if (importBtn) {
+        importBtn.addEventListener("click", () => {
+          const raw = document.getElementById("bulkImport").value || "";
+          IMPORTED_LISTINGS = parseListings(raw);
+          document.getElementById("importStatus").textContent = `Imported ${IMPORTED_LISTINGS.length} items.`;
+          buildListingsTable();
+        });
+      }
+      if (clearImportBtn) {
+        clearImportBtn.addEventListener("click", () => {
+          IMPORTED_LISTINGS = [];
+          document.getElementById("bulkImport").value = "";
+          document.getElementById("importStatus").textContent = "No imported items.";
+          buildListingsTable();
+        });
+      }
+
+      document.getElementById("projectorSearch").addEventListener("input", buildSelector);
+
+      document.getElementById("compareBtn").addEventListener("click", () => {
+        updateCharts();
+      });
+
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        STATE.selected = [];
+        STATE.filters.brightnessMin = 0;
+        STATE.filters.priceMax = 5000;
+        STATE.filters.resolutions.clear();
+        STATE.filters.useCase.clear();
+        document.getElementById("brightnessFilter").value = 0;
+        document.getElementById("priceFilter").value = 5000;
+        document.getElementById("brightnessValue").textContent = "0+";
+        document.getElementById("priceValue").textContent = "Up to 5000";
+        buildToggles();
+        updateSelectorAndAll();
+      });
+
+      document.getElementById("copyLinkBtn").addEventListener("click", async () => {
+        updateURL();
+        try {
+          await navigator.clipboard.writeText(location.href);
+          document.getElementById("selectionHint").textContent = "Link copied.";
+        } catch (e) {
+          document.getElementById("selectionHint").textContent = "Copy failed.";
+        }
+      });
+
+      document.getElementById("brightnessFilter").addEventListener("input", (e) => {
+        STATE.filters.brightnessMin = parseInt(e.target.value, 10);
+        document.getElementById("brightnessValue").textContent = `${STATE.filters.brightnessMin}+`;
+        updateCharts();
+        updateURL();
+      });
+
+      document.getElementById("priceFilter").addEventListener("input", (e) => {
+        STATE.filters.priceMax = parseInt(e.target.value, 10);
+        document.getElementById("priceValue").textContent = `Up to ${STATE.filters.priceMax}`;
+        updateCharts();
+        updateURL();
+      });
+
+      document.getElementById("exportPdf").addEventListener("click", () => window.print());
+      document.getElementById("exportRadar").addEventListener("click", () => {
+        const chart = STATE.charts.masterRadar;
+        if (!chart) return;
+        const url = chart.toBase64Image();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "projector-radar.png";
+        a.click();
+      });
+
+      document.getElementById("closeModal").addEventListener("click", () => {
+        document.getElementById("modal").classList.remove("active");
+      });
+      document.getElementById("modal").addEventListener("click", (e) => {
+        if (e.target.id === "modal") document.getElementById("modal").classList.remove("active");
+      });
+
+      document.getElementById("toggleFullscreen").addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      });
+
+      let autoplayOn = false;
+      document.getElementById("toggleAutoplay").addEventListener("click", () => {
+        autoplayOn = !autoplayOn;
+        if (autoplayOn) {
+          swiper.params.autoplay = { delay: 7000, disableOnInteraction: false };
+          swiper.autoplay.start();
+        } else {
+          swiper.autoplay.stop();
+        }
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+          }
+        });
+      }, { threshold: 0.2 });
+
+      document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+    }
+
+    const swiper = new Swiper(".swiper", {
+      slidesPerView: 1,
+      speed: 900,
+      spaceBetween: 40,
+      pagination: { el: ".swiper-pagination", clickable: true },
+      navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+      keyboard: { enabled: true },
+      on: {
+        slideChange: function () {
+          const current = this.activeIndex + 1;
+          document.getElementById("slideLabel").textContent = `Slide ${current}/12`;
+          document.getElementById("progressFill").style.width = `${(current / 12) * 100}%`;
+          document.querySelectorAll(".hero-title").forEach(el => el.classList.toggle("glitch", current === 1));
+        }
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

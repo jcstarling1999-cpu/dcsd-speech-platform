@@ -1,0 +1,30 @@
+{
+  "name": "@platform/api",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "test": "tsx --test ../../tests/integration/api-contract.test.ts"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^8.3.1",
+    "@platform/adapters": "*",
+    "@platform/auth": "*",
+    "@platform/config": "*",
+    "@platform/contracts": "*",
+    "@platform/database": "*",
+    "@platform/observability": "*",
+    "@platform/queue": "*",
+    "@platform/storage": "*",
+    "@platform/workflow": "*",
+    "fastify": "^4.28.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}
